@@ -1,0 +1,65 @@
+name:           BiobaseBlast
+version:        0.0.0.1
+author:         Christian Hoener zu Siederdissen
+maintainer:     choener@tbi.univie.ac.at
+homepage:       http://www.tbi.univie.ac.at/~choener/
+copyright:      Christian Hoener zu Siederdissen, 2013
+category:       Bioinformatics
+synopsis:       BLAST-related tools
+license:        GPL-3
+license-file:   LICENSE
+build-type:     Simple
+stability:      experimental
+cabal-version:  >= 1.6.0
+description:
+                This library contains BLAST-related functionality. For now,
+                this library is very limited (and Ketil Malde provides other
+                BLAST functionality anyway).
+                .
+                We do provide parsers for BLOSUM and PAM matrices.
+                .
+                The whole set of matrices are compiled into the library to
+                provide defaults.
+
+
+
+extra-source-files:
+
+flag devel
+  description: build quickcheck
+  default: False
+
+library
+  build-depends:
+    base >3 && <5 ,
+    bytestring                      ,
+    biocore             >= 0.2      ,
+    conduit             == 0.5.*    ,
+    containers                      ,
+    transformers
+  if flag(devel)
+    build-depends:
+      QuickCheck      >= 2.5        
+    exposed-modules:
+      Biobase.Fasta.QuickCheck
+
+  exposed-modules:
+    Biobase.Fasta
+    Biobase.Fasta.Import
+
+  ghc-options:
+    -O2
+
+executable FastaTool
+  main-is:
+    FastaTool.hs
+  build-depends:
+    cmdargs == 0.10.*
+  ghc-options:
+    -O2
+
+
+source-repository head
+  type: git
+  location: git://github.com/choener/BiobaseBlast
+
