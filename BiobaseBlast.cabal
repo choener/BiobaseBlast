@@ -34,32 +34,15 @@ flag devel
 
 library
   build-depends:
-    base >3 && <5 ,
-    bytestring                      ,
-    biocore             >= 0.2      ,
-    conduit             == 0.5.*    ,
-    containers                      ,
-    transformers
-  if flag(devel)
-    build-depends:
-      QuickCheck      >= 2.5        
-    exposed-modules:
-      Biobase.Fasta.QuickCheck
+    base >3 && <5
 
   exposed-modules:
-    Biobase.Fasta
-    Biobase.Fasta.Import
+    Biobase.SubstMatrix
+    Biobase.SubstMatrix.Import
 
   ghc-options:
     -O2
 
-executable FastaTool
-  main-is:
-    FastaTool.hs
-  build-depends:
-    cmdargs == 0.10.*
-  ghc-options:
-    -O2
 
 
 source-repository head
