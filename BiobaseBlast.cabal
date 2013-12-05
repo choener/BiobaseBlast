@@ -34,7 +34,8 @@ flag devel
 
 library
   build-depends:
-    base >3 && <5
+    base >3 && <5 ,
+    array
 
   exposed-modules:
     Biobase.SubstMatrix
