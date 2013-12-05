@@ -1,7 +1,8 @@
 
 module Biobase.SubstMatrix where
 
-import qualified Data.Array.IArray as A
+import qualified Data.Array.IArray  as A
+import qualified Data.Array.Unboxed as U
 import qualified Data.Map as M
 import Data.Char (toLower)
 
@@ -12,15 +13,15 @@ import Biobase.Codon
 
 -- | Substitution table for one amino acid with another
 
-type SubstMatrix = A.Array (Char,Char) Int
+type SubstMatrix = U.Array (Char,Char) Int
 
 -- | Substitution from three DNA nucleotides to an amino acid.
 
-type Nuc3SubstMatrix = A.Array (Nuc,Nuc,Nuc,Char) Int
+type Nuc3SubstMatrix = U.Array (Nuc,Nuc,Nuc,Char) Int
 
-type Nuc2SubstMatrix = A.Array (Nuc,Nuc,Char) Int
+type Nuc2SubstMatrix = U.Array (Nuc,Nuc,Char) Int
 
-type Nuc1SubstMatrix = A.Array (Nuc,Char) Int
+type Nuc1SubstMatrix = U.Array (Nuc,Char) Int
 
 
 
