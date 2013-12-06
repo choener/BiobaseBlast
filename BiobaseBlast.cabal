@@ -18,25 +18,21 @@ description:
                 .
                 We do provide parsers for BLOSUM and PAM matrices.
                 .
-                The whole set of matrices are compiled into the library to
-                provide defaults.
-                .
-                The matrices were copied from:
+                The matrices can be found here:
                 <ftp://ftp.ncbi.nih.gov/blast/matrices/>
 
 
 
 extra-source-files:
+  changelog
 
-flag devel
-  description: build quickcheck
-  default: False
+
 
 library
   build-depends:
-    base >3 && <5 ,
-    array ,
-    containers ,
+    base >3 && <5           ,
+    array                   ,
+    containers              ,
     BiobaseXNA >= 0.7.0.2
 
   exposed-modules:
