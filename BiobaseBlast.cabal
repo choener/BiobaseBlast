@@ -1,5 +1,5 @@
 name:           BiobaseBlast
-version:        0.0.0.1
+version:        0.1.0.0
 author:         Christian Hoener zu Siederdissen
 maintainer:     choener@tbi.univie.ac.at
 homepage:       http://www.tbi.univie.ac.at/~choener/
@@ -31,9 +31,10 @@ extra-source-files:
 library
   build-depends:
     base >3 && <5           ,
-    array                   ,
     containers              ,
-    BiobaseXNA >= 0.7.0.2
+    repa >= 3.2             ,
+    BiobaseXNA >= 0.8.0.0   ,
+    PrimitiveArray >= 0.5
 
   exposed-modules:
     Biobase.SubstMatrix

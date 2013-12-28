@@ -1,58 +1,67 @@
+{-# LANGUAGE TypeOperators #-}
 
 module Biobase.SubstMatrix where
 
-import qualified Data.Array.IArray  as A
-import qualified Data.Array.Unboxed as U
 import qualified Data.Map as M
-import Data.Char (toLower)
+import           Data.Char (toLower)
+import           Data.Array.Repa.Index
+import           Data.List (minimumBy)
 
-import Biobase.Primary
-import Biobase.Codon
+import qualified Data.PrimitiveArray as PA
+import qualified Data.PrimitiveArray.Zero as PA
+import           Biobase.Primary
+import           Biobase.AAseq
 
 
 
 -- | Substitution table for one amino acid with another
 
-type SubstMatrix = U.Array (Char,Char) Int
+type SubstMatrix = PA.Unboxed (Z:.AA:.AA) Int -- U.Array (Char,Char) Int
 
 -- | Substitution from three DNA nucleotides to an amino acid.
 
-type Nuc3SubstMatrix = U.Array (Nuc,Nuc,Nuc,Char) Int
+type Nuc3SubstMatrix = PA.Unboxed (Z:.Nuc:.Nuc:.Nuc:.AA) Int -- U.Array (Nuc,Nuc,Nuc,Char) Int
 
-type Nuc2SubstMatrix = U.Array (Nuc,Nuc,Char) Int
+type Nuc2SubstMatrix = PA.Unboxed (Z:.Nuc:.Nuc:.AA) Int -- U.Array (Nuc,Nuc,Char) Int
 
-type Nuc1SubstMatrix = U.Array (Nuc,Char) Int
+type Nuc1SubstMatrix = PA.Unboxed (Z:.Nuc:.AA) Int -- U.Array (Nuc,Char) Int
 
 
 
--- *
+-- * Create nucleotide-based substitution matrices.
+
+-- | The usual matrix, where a codon and an amino acid are compared.
 
 mkNuc3SubstMatrix :: SubstMatrix -> Nuc3SubstMatrix
-mkNuc3SubstMatrix mat = A.accumArray (\_ z -> z) (-10) ((nN,nN,nN,'*'),(nT,nT,nT,'Z'))
-  [ ( (a,b,c,k), case l of Just l' -> mat A.! (l',k) ; Nothing -> -10 )
+mkNuc3SubstMatrix mat = PA.fromAssocs (Z:.nN:.nN:.nN:.aStop) (Z:.nT:.nT:.nT:.aY) (-999)
+  [ ( (Z:.a:.b:.c:.k), case l of Just l' -> mat PA.! (Z:.l':.k) ; Nothing -> -999 )
   | a<-acgt, b<-acgt, c<-acgt
-  , k<-['*' .. 'Z']
-  , let abc = map (toLower . fromNuc) [a,b,c]
-  , let l = M.lookup abc codonTable
+  , k<-aaRange
+  , let l = M.lookup [a,b,c] nucCodonTable
   ]
+
+-- | Special substitution matrix, where two amino acids are compared to an
+-- amino acid.
 
 mkNuc2SubstMatrix :: (Int -> Int -> Int) -> (Int -> Int) -> SubstMatrix -> Nuc2SubstMatrix
-mkNuc2SubstMatrix f g mat = A.accumArray f (-10) ((nN,nN,'*'),(nT,nT,'Z'))
-  [ ( (x,y,k), case l of Just l' -> mat A.! (l',k) ; Nothing -> -10 )
-  | a<-acgt, b<-acgt, c<-acgt
-  , k<-['*' .. 'Z']
-  , (x,y) <- [ (a,b), (a,c), (b,c) ]
-  , let abc = map (toLower . fromNuc) [a,b,c]
-  , let l = M.lookup abc codonTable
-  ]
+mkNuc2SubstMatrix f g mat = PA.fromAssocs (Z:.nN:.nN:.aStop) (Z:.nT:.nT:.aY) (-999) -- ((nN,nN,'*'),(nT,nT,'Z'))
+  . M.assocs
+  . M.fromListWith f
+  $ [ ( (Z:.x:.y:.k), case l of Just l' -> mat PA.! (Z:.l':.k) ; Nothing -> -999 )
+    | a<-acgt, b<-acgt, c<-acgt
+    , k<-aaRange
+    , (x,y) <- [ (a,b), (a,c), (b,c) ]
+    , let l = M.lookup [a,b,c] nucCodonTable
+    ]
 
 mkNuc1SubstMatrix :: (Int -> Int -> Int) -> (Int -> Int) -> SubstMatrix -> Nuc1SubstMatrix
-mkNuc1SubstMatrix f g mat = A.accumArray f (-10) ((nN,'*'),(nT,'Z'))
-  [ ( (x,k), case l of Just l' -> mat A.! (l',k) ; Nothing -> -10 )
-  | a<-acgt, b<-acgt, c<-acgt
-  , k<-['*' .. 'Z']
-  , x <- [a,b,c]
-  , let abc = map (toLower . fromNuc) [a,b,c]
-  , let l = M.lookup abc codonTable
-  ]
+mkNuc1SubstMatrix f g mat = PA.fromAssocs (Z:.nN:.aStop) (Z:.nT:.aY) (-999) -- A.accumArray f (-10) ((nN,'*'),(nT,'Z'))
+  . M.assocs
+  . M.fromListWith f
+  $ [ ( (Z:.x:.k), case l of Just l' -> mat PA.! (Z:.l':.k) ; Nothing -> -999 )
+    | a<-acgt, b<-acgt, c<-acgt
+    , k<-aaRange
+    , x <- [a,b,c]
+    , let l = M.lookup [a,b,c] nucCodonTable
+    ]
 
