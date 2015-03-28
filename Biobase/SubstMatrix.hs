@@ -1,67 +1,151 @@
-{-# LANGUAGE TypeOperators #-}
 
 module Biobase.SubstMatrix where
 
-import qualified Data.Map as M
-import           Data.Char (toLower)
-import           Data.Array.Repa.Index
-import           Data.List (minimumBy)
+import           Control.DeepSeq (NFData(..))
+import           Data.Aeson (FromJSON,ToJSON)
+import           Data.Binary (Binary)
+import           Data.Serialize (Serialize)
+import           GHC.Generics (Generic)
+import qualified Data.Map.Strict as M
+import qualified Data.Vector.Unboxed as VU
+import           Data.Vector.Unboxed.Deriving
 
-import qualified Data.PrimitiveArray as PA
-import qualified Data.PrimitiveArray.Zero as PA
-import           Biobase.Primary
-import           Biobase.AAseq
-
-
-
--- | Substitution table for one amino acid with another
-
-type SubstMatrix = PA.Unboxed (Z:.AA:.AA) Int -- U.Array (Char,Char) Int
-
--- | Substitution from three DNA nucleotides to an amino acid.
-
-type Nuc3SubstMatrix = PA.Unboxed (Z:.Nuc:.Nuc:.Nuc:.AA) Int -- U.Array (Nuc,Nuc,Nuc,Char) Int
-
-type Nuc2SubstMatrix = PA.Unboxed (Z:.Nuc:.Nuc:.AA) Int -- U.Array (Nuc,Nuc,Char) Int
-
-type Nuc1SubstMatrix = PA.Unboxed (Z:.Nuc:.AA) Int -- U.Array (Nuc,Char) Int
+import           Biobase.Primary.AA (AA,aaRange)
+import           Biobase.Primary.Letter
+import           Biobase.Primary.Nuc.DNA (DNA)
+import           Biobase.Primary.Trans (dnaAAmap)
+import           Data.PrimitiveArray
+import qualified Biobase.Primary.AA as AA
+import qualified Biobase.Primary.Nuc.DNA as D
 
 
 
--- * Create nucleotide-based substitution matrices.
+-- | Discretized log-odds.
+--
+-- TODO good candidate for the generalized Types module.
 
--- | The usual matrix, where a codon and an amino acid are compared.
+newtype DLO = DLO { fromDLO :: Int }
+  deriving (Generic,Eq,Ord,Show,Read)
 
-mkNuc3SubstMatrix :: SubstMatrix -> Nuc3SubstMatrix
-mkNuc3SubstMatrix mat = PA.fromAssocs (Z:.nN:.nN:.nN:.aStop) (Z:.nT:.nT:.nT:.aY) (-999)
-  [ ( (Z:.a:.b:.c:.k), case l of Just l' -> mat PA.! (Z:.l':.k) ; Nothing -> -999 )
-  | a<-acgt, b<-acgt, c<-acgt
-  , k<-aaRange
-  , let l = M.lookup [a,b,c] nucCodonTable
+derivingUnbox "DLO"
+  [t| DLO -> Int |]
+  [| fromDLO     |]
+  [| DLO         |]
+
+instance Binary    DLO
+instance Serialize DLO
+instance FromJSON  DLO
+instance ToJSON    DLO
+
+instance NFData DLO where
+  rnf (DLO k) = rnf k
+  {-# Inline rnf #-}
+
+-- | Denotes that we are dealing with a similarity score. Higher is more
+-- similar.
+
+data Similarity
+
+-- | Denotes that we are dealing with a distance score. Lower is more
+-- similar.
+
+data Distance
+
+-- An amino-acid substitution matrix. Tagged with the type of scoring used.
+
+newtype AASubstMat t = AASubstMat { aaSubstMat :: Unboxed (Z:.Letter AA:.Letter AA) DLO }
+  deriving (Generic,Eq,Read,Show)
+
+instance Binary    (AASubstMat t)
+instance Serialize (AASubstMat t)
+instance FromJSON  (AASubstMat t)
+instance ToJSON    (AASubstMat t)
+
+instance NFData (AASubstMat t)
+
+-- | @PAM@ matrices are similarity matrices.
+
+type SubstPAM = AASubstMat Similarity
+
+-- | @BLOSUM@ matrices are distance matrices.
+
+type SubstBLOSUM = AASubstMat Distance
+
+-- | Substitution matrix from amino acids to nucleotide triplets.
+
+newtype ANuc3SubstMat t = ANuc3SubstMat { anuc3SubstMat :: Unboxed (Z:.Letter AA:.Letter DNA:.Letter DNA:.Letter DNA) DLO }
+  deriving (Generic,Eq,Read,Show)
+
+instance Binary    (ANuc3SubstMat t)
+instance Serialize (ANuc3SubstMat t)
+instance FromJSON  (ANuc3SubstMat t)
+instance ToJSON    (ANuc3SubstMat t)
+
+instance NFData (ANuc3SubstMat t)
+
+-- | Substitution matrix from amino acids to degenerate nucleotide
+-- 2-tuples. The third nucleotide letter is missing.
+
+newtype ANuc2SubstMat t = ANuc2SubstMat { anuc2SubstMat :: Unboxed (Z:.Letter AA:.Letter DNA:.Letter DNA) DLO }
+  deriving (Generic,Eq,Read,Show)
+
+instance Binary    (ANuc2SubstMat t)
+instance Serialize (ANuc2SubstMat t)
+instance FromJSON  (ANuc2SubstMat t)
+instance ToJSON    (ANuc2SubstMat t)
+
+instance NFData (ANuc2SubstMat t)
+
+-- | Substitution matrix from amino acids to degenerate nucleotide
+-- 1-tuples. Two out of three nucleotides in a triplet are missing.
+
+newtype ANuc1SubstMat t = ANuc1SubstMat { anuc1SubstMat :: Unboxed (Z:.Letter AA:.Letter DNA) DLO }
+  deriving (Generic,Eq,Read,Show)
+
+instance Binary    (ANuc1SubstMat t)
+instance Serialize (ANuc1SubstMat t)
+instance FromJSON  (ANuc1SubstMat t)
+instance ToJSON    (ANuc1SubstMat t)
+
+instance NFData (ANuc1SubstMat t)
+
+-- | The usual substitution matrix, but here with a codon and an amino acid
+-- to be compared.
+
+mkANuc3SubstMat :: AASubstMat t -> ANuc3SubstMat t
+mkANuc3SubstMat (AASubstMat m) = ANuc3SubstMat $ fromAssocs (Z:. AA.Stop :. D.A:.D.A:.D.A) (Z:. AA.Z :. D.N:.D.N:.D.N) (DLO $ -999)
+  [ ( (Z:.a:.u:.v:.w) , maybe (DLO $ -999) (\b -> m!(Z:.a:.b)) $ M.lookup uvw dnaAAmap)
+  | a <- aaRange
+  , u <- [D.A .. D.N], v <- [D.A .. D.N], w <- [D.A .. D.N]
+  , let uvw = VU.fromList [u,v,w]
   ]
 
--- | Special substitution matrix, where two amino acids are compared to an
--- amino acid.
+-- | Create a 2-tuple to amino acid substitution matrix. Here, @f@ combines
+-- all to entries that have the same 2-tuple index.
 
-mkNuc2SubstMatrix :: (Int -> Int -> Int) -> (Int -> Int) -> SubstMatrix -> Nuc2SubstMatrix
-mkNuc2SubstMatrix f g mat = PA.fromAssocs (Z:.nN:.nN:.aStop) (Z:.nT:.nT:.aY) (-999) -- ((nN,nN,'*'),(nT,nT,'Z'))
+mkANuc2SubstMat :: (DLO -> DLO -> DLO) -> AASubstMat t -> ANuc2SubstMat t
+mkANuc2SubstMat f (AASubstMat m) = ANuc2SubstMat $ fromAssocs (Z:. AA.Stop :. D.A:.D.A) (Z:. AA.Z :. D.N:.D.N) (DLO $ -999)
   . M.assocs
   . M.fromListWith f
-  $ [ ( (Z:.x:.y:.k), case l of Just l' -> mat PA.! (Z:.l':.k) ; Nothing -> -999 )
-    | a<-acgt, b<-acgt, c<-acgt
-    , k<-aaRange
-    , (x,y) <- [ (a,b), (a,c), (b,c) ]
-    , let l = M.lookup [a,b,c] nucCodonTable
+  $ [ ((Z:.a:.x:.y), maybe (DLO $ -999) (\k -> m!(Z:.a:.k)) $ M.lookup uvw dnaAAmap)
+    | a <- aaRange
+    , u <- [D.A .. D.N], v <- [D.A .. D.N], w <- [D.A .. D.N]
+    , (x,y) <- [ (u,v), (u,w), (v,w) ]
+    , let uvw = VU.fromList [u,v,w]
     ]
 
-mkNuc1SubstMatrix :: (Int -> Int -> Int) -> (Int -> Int) -> SubstMatrix -> Nuc1SubstMatrix
-mkNuc1SubstMatrix f g mat = PA.fromAssocs (Z:.nN:.aStop) (Z:.nT:.aY) (-999) -- A.accumArray f (-10) ((nN,'*'),(nT,'Z'))
+-- | The most degenerate case, where just a single nucleotide remains in
+-- the amino-acid / nucleotide substitution. Again, @f@ combines different
+-- entries.
+
+mkANuc1SubstMat :: (DLO -> DLO -> DLO) -> AASubstMat t -> ANuc1SubstMat t
+mkANuc1SubstMat f (AASubstMat m) = ANuc1SubstMat $ fromAssocs (Z:. AA.Stop :. D.A) (Z:. AA.Z :. D.N) (DLO $ -999)
   . M.assocs
   . M.fromListWith f
-  $ [ ( (Z:.x:.k), case l of Just l' -> mat PA.! (Z:.l':.k) ; Nothing -> -999 )
-    | a<-acgt, b<-acgt, c<-acgt
-    , k<-aaRange
-    , x <- [a,b,c]
-    , let l = M.lookup [a,b,c] nucCodonTable
+  $ [ ((Z:.a:.x), maybe (DLO $ -999) (\k -> m!(Z:.a:.k)) $ M.lookup uvw dnaAAmap)
+    | a <- aaRange
+    , u <- [D.A .. D.N], v <- [D.A .. D.N], w <- [D.A .. D.N]
+    , x <- [u,v,w]
+    , let uvw = VU.fromList [u,v,w]
     ]
 

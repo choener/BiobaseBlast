@@ -1,9 +1,9 @@
 name:           BiobaseBlast
 version:        0.1.0.0
 author:         Christian Hoener zu Siederdissen
-maintainer:     choener@tbi.univie.ac.at
-homepage:       http://www.tbi.univie.ac.at/~choener/
-copyright:      Christian Hoener zu Siederdissen, 2013
+maintainer:     choener@bioinf.uni-leipzig.de
+homepage:       http://www.bioinf.uni-leipzig.de/~choener/
+copyright:      Christian Hoener zu Siederdissen, 2013 - 2015
 category:       Bioinformatics
 synopsis:       BLAST-related tools
 license:        GPL-3
@@ -12,13 +12,16 @@ build-type:     Simple
 stability:      experimental
 cabal-version:  >= 1.6.0
 description:
-                This library contains BLAST-related functionality. For now,
-                this library is very limited (and Ketil Malde provides other
-                BLAST functionality anyway).
+                This library contains BLAST-related functionality:
                 .
-                We do provide parsers for BLOSUM and PAM matrices.
+                - Parsers for BLOSUM and PAM matrices.
+                - Specialized substitution functions for (in)complete amino
+                  acid / nucleotide triplet substitution.
+                - Incomplete nucleotide patterns map one or two nucleotides to
+                  an amino acid (need for indel editing in the mitochondria of
+                  certain species like /p.polycephalum/).
                 .
-                The matrices can be found here:
+                The matrices are currently not provided but can be found here:
                 <ftp://ftp.ncbi.nih.gov/blast/matrices/>
 
 
@@ -29,13 +32,24 @@ extra-source-files:
 
 
 library
-  build-depends:
-    base >3 && <5           ,
-    containers              ,
-    repa >= 3.2             ,
-    BiobaseXNA >= 0.8.0.0   ,
-    PrimitiveArray >= 0.5
+  build-depends: base             >= 4.7      && < 4.9
+               , aeson            == 0.8.*
+               , binary           == 0.7.*
+               , BiobaseXNA       == 0.9.1.*
+               , cereal           == 0.4.*
+               , containers
+               , deepseq          >= 1.3      && < 1.5
+               , PrimitiveArray   == 0.6.*
+               , vector           == 0.10.*
+               , vector-th-unbox  == 0.2.*
 
+  default-language:
+    Haskell2010
+  default-extensions: DeriveGeneric
+                    , MultiParamTypeClasses
+                    , TemplateHaskell
+                    , TypeFamilies
+                    , TypeOperators
   exposed-modules:
     Biobase.SubstMatrix
     Biobase.SubstMatrix.Import
