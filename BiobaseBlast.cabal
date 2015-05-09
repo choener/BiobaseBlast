@@ -5,12 +5,13 @@ maintainer:     choener@bioinf.uni-leipzig.de
 homepage:       http://www.bioinf.uni-leipzig.de/~choener/
 copyright:      Christian Hoener zu Siederdissen, 2013 - 2015
 category:       Bioinformatics
-synopsis:       BLAST-related tools
 license:        GPL-3
 license-file:   LICENSE
 build-type:     Simple
 stability:      experimental
-cabal-version:  >= 1.6.0
+cabal-version:  >= 1.10.0
+tested-with:    GHC == 7.8.4, GHC == 7.10.1
+synopsis:       BLAST-related tools
 description:
                 This library contains BLAST-related functionality:
                 .
