@@ -5,41 +5,21 @@ import           Control.DeepSeq (NFData(..))
 import           Data.Aeson (FromJSON,ToJSON)
 import           Data.Binary (Binary)
 import           Data.Serialize (Serialize)
+import           Data.Vector.Unboxed.Deriving
 import           GHC.Generics (Generic)
 import qualified Data.Map.Strict as M
 import qualified Data.Vector.Unboxed as VU
-import           Data.Vector.Unboxed.Deriving
 
 import           Biobase.Primary.AA (AA,aaRange)
 import           Biobase.Primary.Letter
 import           Biobase.Primary.Nuc.DNA (DNA)
 import           Biobase.Primary.Trans (dnaAAmap)
+import           Biobase.Types.Odds
 import           Data.PrimitiveArray
 import qualified Biobase.Primary.AA as AA
 import qualified Biobase.Primary.Nuc.DNA as D
 
 
-
--- | Discretized log-odds.
---
--- TODO good candidate for the generalized Types module.
-
-newtype DLO = DLO { fromDLO :: Int }
-  deriving (Generic,Eq,Ord,Show,Read)
-
-derivingUnbox "DLO"
-  [t| DLO -> Int |]
-  [| fromDLO     |]
-  [| DLO         |]
-
-instance Binary    DLO
-instance Serialize DLO
-instance FromJSON  DLO
-instance ToJSON    DLO
-
-instance NFData DLO where
-  rnf (DLO k) = rnf k
-  {-# Inline rnf #-}
 
 -- | Denotes that we are dealing with a similarity score. Higher is more
 -- similar.

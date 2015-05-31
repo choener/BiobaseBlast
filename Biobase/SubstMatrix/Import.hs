@@ -7,6 +7,7 @@ import           Data.Char (toLower)
 import qualified Data.Map as M
 
 import           Biobase.Primary.AA (charAA)
+import           Biobase.Types.Odds
 import           Data.PrimitiveArray hiding (map)
 import qualified Biobase.Primary.AA as AA
 
