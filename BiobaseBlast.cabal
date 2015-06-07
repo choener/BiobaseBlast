@@ -2,7 +2,8 @@ name:           BiobaseBlast
 version:        0.1.1.0
 author:         Christian Hoener zu Siederdissen
 maintainer:     choener@bioinf.uni-leipzig.de
-homepage:       http://www.bioinf.uni-leipzig.de/~choener/
+homepage:       https://github.com/choener/BiobaseBlast
+bug-reports:    https://github.com/choener/BiobaseBlast/issues
 copyright:      Christian Hoener zu Siederdissen, 2013 - 2015
 category:       Bioinformatics
 license:        GPL-3
