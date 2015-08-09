@@ -29,7 +29,8 @@ description:
 
 
 extra-source-files:
-  changelog
+  changelog.md
+  README.md
 
 
 
