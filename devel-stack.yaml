@@ -1,0 +1,13 @@
+resolver: lts-6.5
+
+packages:
+- '.'
+- location: ../Lib-PrimitiveArray
+  extra-dep: true
+- location: ../Lib-OrderedBits
+  extra-dep: true
+- location: ../Lib-DPutils
+  extra-dep: true
+
+extra-deps: []
+
