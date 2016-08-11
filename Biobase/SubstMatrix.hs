@@ -38,8 +38,8 @@ newtype AASubstMat t = AASubstMat { aaSubstMat :: Unboxed (Z:.Letter AA:.Letter 
 
 instance Binary    (AASubstMat t)
 instance Serialize (AASubstMat t)
-instance FromJSON  (AASubstMat t)
-instance ToJSON    (AASubstMat t)
+--instance FromJSON  (AASubstMat t)
+--instance ToJSON    (AASubstMat t)
 
 instance NFData (AASubstMat t)
 
@@ -58,8 +58,8 @@ newtype ANuc3SubstMat t = ANuc3SubstMat { anuc3SubstMat :: Unboxed (Z:.Letter AA
 
 instance Binary    (ANuc3SubstMat t)
 instance Serialize (ANuc3SubstMat t)
-instance FromJSON  (ANuc3SubstMat t)
-instance ToJSON    (ANuc3SubstMat t)
+--instance FromJSON  (ANuc3SubstMat t)
+--instance ToJSON    (ANuc3SubstMat t)
 
 instance NFData (ANuc3SubstMat t)
 
@@ -71,8 +71,8 @@ newtype ANuc2SubstMat t = ANuc2SubstMat { anuc2SubstMat :: Unboxed (Z:.Letter AA
 
 instance Binary    (ANuc2SubstMat t)
 instance Serialize (ANuc2SubstMat t)
-instance FromJSON  (ANuc2SubstMat t)
-instance ToJSON    (ANuc2SubstMat t)
+--instance FromJSON  (ANuc2SubstMat t)
+--instance ToJSON    (ANuc2SubstMat t)
 
 instance NFData (ANuc2SubstMat t)
 
@@ -84,8 +84,8 @@ newtype ANuc1SubstMat t = ANuc1SubstMat { anuc1SubstMat :: Unboxed (Z:.Letter AA
 
 instance Binary    (ANuc1SubstMat t)
 instance Serialize (ANuc1SubstMat t)
-instance FromJSON  (ANuc1SubstMat t)
-instance ToJSON    (ANuc1SubstMat t)
+--instance FromJSON  (ANuc1SubstMat t)
+--instance ToJSON    (ANuc1SubstMat t)
 
 instance NFData (ANuc1SubstMat t)
 
