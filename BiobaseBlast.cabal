@@ -36,17 +36,17 @@ extra-source-files:
 
 library
   build-depends: base             >= 4.7      && < 5.0
-               , aeson            >= 0.8      && < 1.2
-               , binary           >= 0.7      && < 0.8
-               , cereal           >= 0.4      && < 0.6
+               , aeson            >= 0.8
+               , binary           >= 0.7
+               , cereal           >= 0.4
                , containers
-               , deepseq          >= 1.3      && < 1.5
-               , vector           >= 0.10     && < 0.12
-               , vector-th-unbox  >= 0.2      && < 0.3
+               , deepseq          >= 1.3
+               , vector           >= 0.10
+               , vector-th-unbox  >= 0.2
                --
                , BiobaseTypes     == 0.1.2.*
                , BiobaseXNA       == 0.9.3.*
-               , PrimitiveArray   == 0.7.1.*
+               , PrimitiveArray   == 0.7.2.*
 
   default-language:
     Haskell2010
@@ -61,6 +61,35 @@ library
 
   ghc-options:
     -O2
+
+
+
+test-suite properties
+  type:
+    exitcode-stdio-1.0
+  main-is:
+    properties.hs
+  ghc-options:
+    -O2 -threaded -rtsopts -with-rtsopts=-N
+  hs-source-dirs:
+    tests
+  default-language:
+    Haskell2010
+  default-extensions: BangPatterns
+                    , OverloadedStrings
+                    , ScopedTypeVariables
+                    , TemplateHaskell
+  build-depends: base
+               , bytestring
+               , containers
+               , filepath
+               , split                      >= 0.2.3
+               , tasty                      >= 0.11
+               , tasty-quickcheck           >= 0.8
+               , tasty-silver               >= 3.1.9
+               , tasty-th                   >= 0.1
+               --
+               , BiobaseBlast
 
 
 
