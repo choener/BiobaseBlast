@@ -46,7 +46,7 @@ library
                --
                , BiobaseTypes     == 0.1.2.*
                , BiobaseXNA       == 0.9.3.*
-               , PrimitiveArray   == 0.7.2.*
+               , PrimitiveArray   == 0.8.0.*
 
   default-language:
     Haskell2010
