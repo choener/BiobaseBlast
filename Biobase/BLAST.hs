@@ -1,6 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE LambdaCase #-}
--- | NCBI BLAST
+-- | Types and functions for NCBI BLAST+
 --
 
 module Biobase.BLAST

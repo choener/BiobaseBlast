@@ -28,14 +28,14 @@ blastFromFile filePath = do
      then parseTabularBlasts <$> B.readFile filePath
      else fail "# tabular blast file \"%s\" does not exist\n" filePath
 
--- |Read a lazy bytestring and stream out a lsit of @BlastTabularResult@'s.
+-- | Read a lazy bytestring and stream out a lsit of @BlastTabularResult@'s.
 -- In case, there is a parse error "late" in the file, we might have
 -- already streamed out some (or many!) of these results.
 
 parseTabularBlasts :: B.ByteString -> [BlastTabularResult]
 parseTabularBlasts = go
   where go xs = case L.parse genParseTabularBlast xs of
-          L.Fail remainingInput ctxts err  -> error $ "parseTabularBlasts failed! " ++ err ++ " ctxt: " ++ show ctxts ++ " head of remaining input: " ++ (B.unpack $ B.take 1000 remainingInput)
+          L.Fail remainingInput ctxts err  -> error $ "parseTabularBlasts failed! " ++ err ++ " ctxt: " ++ show ctxts ++ " head of remaining input: " ++ B.unpack (B.take 1000 remainingInput)
           L.Done remainingInput btr
             | B.null remainingInput  -> [btr]
             | otherwise              -> btr : go remainingInput
@@ -67,7 +67,7 @@ genParseTabularBlast = do
   _blastHitNumber <- decimal  <?> "Hit number"
   string " hits found\n" <?> "hits found"
   _tabularHit <- count  _blastHitNumber (try genParseBlastTabularHit)  <?> "Tabular hit"
-  return $ BlastTabularResult _blastProgram (toLB $ _blastQueryId) (B.pack _blastDatabase) _blastHitNumber (V.fromList _tabularHit)
+  return $ BlastTabularResult _blastProgram (toLB _blastQueryId) (B.pack _blastDatabase) _blastHitNumber (V.fromList _tabularHit)
 
 genParseFieldLine :: Parser ()
 genParseFieldLine = do
