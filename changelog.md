@@ -1,3 +1,8 @@
+0.2.0.0
+-------
+
+- Added parsing functionality for tabular NCBI BLAST+ output
+
 0.1.0.0
 -------
 

@@ -1,6 +1,6 @@
 name:           BiobaseBlast
-version:        0.1.0.0
-author:         Christian Hoener zu Siederdissen
+version:        0.2.0.0
+author:         Christian Hoener zu Siederdissen, Florian Eggenhofer
 maintainer:     choener@bioinf.uni-leipzig.de
 homepage:       https://github.com/choener/BiobaseBlast
 bug-reports:    https://github.com/choener/BiobaseBlast/issues
@@ -16,6 +16,7 @@ synopsis:       BLAST-related tools
 description:
                 This library contains BLAST-related functionality:
                 .
+		- Parser for tabular NCBI BLAST+ output
                 - Parsers for BLOSUM and PAM matrices.
                 - Specialized substitution functions for (in)complete amino
                   acid / nucleotide triplet substitution.
@@ -26,7 +27,14 @@ description:
                 The matrices are currently not provided but can be found here:
                 <ftp://ftp.ncbi.nih.gov/blast/matrices/>
 
+source-repository head
+  type:     git
+  location: https://github.com/choener/BiobaseBlast
 
+source-repository this
+  type:     git
+  location: https://github.com/choener/BiobaseBlast/tree/0.2.0.0
+  tag:      0.2.0.0
 
 extra-source-files:
   changelog.md
