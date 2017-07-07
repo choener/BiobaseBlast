@@ -26,7 +26,10 @@ description:
                 .
                 The matrices are currently not provided but can be found here:
                 <ftp://ftp.ncbi.nih.gov/blast/matrices/>
-
+extra-source-files:
+  changelog.md
+  README.md
+  
 source-repository head
   type:     git
   location: https://github.com/choener/BiobaseBlast
@@ -36,9 +39,6 @@ source-repository this
   location: https://github.com/choener/BiobaseBlast/tree/0.2.0.0
   tag:      0.2.0.0
 
-extra-source-files:
-  changelog.md
-  README.md
 
 
 
