@@ -3,7 +3,10 @@
 
 -- | Parses NCBI BLAST+ tabular output
 
-module Biobase.BLAST.Import where
+module Biobase.BLAST.Import (blastFromFile,
+                             parseTabularBlasts,
+                             parseTabularHTTPBlasts
+                            ) where
 
 import Prelude hiding (takeWhile)
 import Data.Attoparsec.ByteString.Char8 hiding (isSpace)
@@ -40,25 +43,29 @@ parseTabularBlasts = go
             | B.null remainingInput  -> [btr]
             | otherwise              -> btr : go remainingInput
 
+parseTabularHTTPBlasts :: B.ByteString -> [BlastTabularResult]
+parseTabularHTTPBlasts = go
+  where go xs = case L.parse genParseTabularHTTPBlast xs of
+          L.Fail remainingInput ctxts err  -> error $ "parseTabularHTTPBlasts failed! " ++ err ++ " ctxt: " ++ show ctxts ++ " head of remaining input: " ++ B.unpack (B.take 1000 remainingInput)
+          L.Done remainingInput btr
+            | B.null remainingInput  -> [btr]
+            | otherwise              -> btr : go remainingInput
+
 genParseBlastProgram :: Parser BlastProgram
 genParseBlastProgram = do
   choice [string "# BLAST",string "# blast"]
-  (toLower <$> anyChar) >>= return . \case 
+  (toLower <$> anyChar) >>= return . \case
     'x' -> BlastX
     'p' -> BlastP
     'n' -> BlastN
 
 genParseTabularBlast :: Parser BlastTabularResult
 genParseTabularBlast = do
-  --choice [string "# BLAST",string "# blast"]
-  --_blastProgram <- choice [string "p",string "P",string "x",string "X"] <?> "Program"
   _blastProgram <- genParseBlastProgram <?> "Program"
   many1 (notChar '\n')
   endOfLine
   string "# Query: " <?> "Query"
-  --_blastQueryId <- many1 (notChar ' ') <* skipWhile (not (string "\n")) <?> "QueryId"
   _blastQueryId <- takeWhile (not . isSpace) <* manyTill anyChar endOfLine <?> "QueryId"
-  --_blastQueryName <- many' (notChar '\n')  <?> "QueryName"
   string "# Database: " <?> "Database"
   _blastDatabase <- many1 (notChar '\n') <?> "Db"
   string "\n# " <?> "header linebreak"
@@ -67,6 +74,29 @@ genParseTabularBlast = do
   _blastHitNumber <- decimal  <?> "Hit number"
   string " hits found\n" <?> "hits found"
   _tabularHit <- count  _blastHitNumber (try genParseBlastTabularHit)  <?> "Tabular hit"
+  skipMany endOfLine
+  return $ BlastTabularResult _blastProgram (toLB _blastQueryId) (B.pack _blastDatabase) _blastHitNumber (V.fromList _tabularHit)
+
+genParseTabularHTTPBlast :: Parser BlastTabularResult
+genParseTabularHTTPBlast = do
+  _blastProgram <- genParseBlastProgram <?> "Program"
+  many1 (notChar '\n')
+  endOfLine
+  string "# Iteration: " <?> "Iteration" -----
+  _ <- takeWhile (not . isSpace) <* manyTill anyChar endOfLine <?> "IterationNumber" -----
+  string "# Query: " <?> "Query"
+  _blastQueryId <- takeWhile (not . isSpace) <* manyTill anyChar endOfLine <?> "QueryId"
+  string "# RID: " <?> "RID" -----
+  _ <- takeWhile (not . isSpace) <* manyTill anyChar endOfLine <?> "RID" -----
+  string "# Database: " <?> "Database"
+  _blastDatabase <- many1 (notChar '\n') <?> "Db"
+  string "\n# " <?> "header linebreak"
+  --fields line
+  skipMany (try genParseFieldLine) <?> "Fields"
+  _blastHitNumber <- decimal  <?> "Hit number"
+  string " hits found\n" <?> "hits found"
+  _tabularHit <- count  _blastHitNumber (try genParseBlastHTTPTabularHit)  <?> "Tabular hit"
+  skipMany endOfLine
   return $ BlastTabularResult _blastProgram (toLB _blastQueryId) (B.pack _blastDatabase) _blastHitNumber (V.fromList _tabularHit)
 
 genParseFieldLine :: Parser ()
@@ -78,9 +108,6 @@ genParseFieldLine = do
 
 genParseBlastTabularHit :: Parser BlastTabularHit
 genParseBlastTabularHit = do
-  --start <- peekChar'
-  --when (start == '#') (fail "irgendwas")
-  --_queryId <- takeWhile (\c ->  c /= '#' || c /= '\t')  <?> "hit qid"
   _queryId <- takeWhile1 ((/=9) . ord) <?> "hit qid"
   char '\t'
   _subjectId <- takeWhile1 ((/=9) . ord) <?> "hit sid"
@@ -112,7 +139,40 @@ genParseBlastTabularHit = do
   _subjectSeq <- takeWhile1 ((/=10) . ord) <?> "hit subSeq" -- 10 == '\n'
   char '\n'
   return $ BlastTabularHit (B.fromStrict _queryId) (B.fromStrict _subjectId) _seqIdentity _alignmentLength _misMatches _gapOpenScore _queryStart _queryEnd _hitSeqStart _hitSeqEnd _eValue _bitScore _subjectFrame (B.fromStrict _querySeq) (B.fromStrict _subjectSeq)
-  
+
+-- specific for Tabular Blast from NCBI HTTP requests
+genParseBlastHTTPTabularHit :: Parser BlastTabularHit
+genParseBlastHTTPTabularHit = do
+    _queryId <- takeWhile1 ((/=9) . ord) <?> "hit qid"
+    char '\t'
+    _subjectId <- takeWhile1 ((/=9) . ord) <?> "hit sid"
+    char '\t'
+    _ <- takeWhile1 ((/=9) . ord) <?> "redundant id1"
+    char '\t'
+    _ <- takeWhile1 ((/=9) . ord) <?> "redundant id2"
+    char '\t'
+    _seqIdentity <- double <?> "hit seqid"
+    char '\t'
+    _alignmentLength <- decimal  <?> "hit sid"
+    char '\t'
+    _misMatches <- decimal <?> "hit mmatch"
+    char '\t'
+    _gapOpenScore <- decimal <?> "hit gopen"
+    char '\t'
+    _queryStart <- decimal <?> "hit qstart"
+    char '\t'
+    _queryEnd <- decimal  <?> "hit qend"
+    char '\t'
+    _hitSeqStart <- decimal  <?> "hit sstart"
+    char '\t'
+    _hitSeqEnd <- decimal <?> "hit send"
+    char '\t'
+    _eValue <- double <?> "hit eval"
+    char '\t'
+    _bitScore <- double <?> "hit bs"
+    char '\n'
+    return $ BlastTabularHit (B.fromStrict _queryId) (B.fromStrict _subjectId) _seqIdentity _alignmentLength _misMatches _gapOpenScore _queryStart _queryEnd _hitSeqStart _hitSeqEnd _eValue _bitScore 0 B.empty B.empty
+
 --IUPAC amino acid with gap
 --aminoacidLetters :: Char -> Bool
 aminoacidLetters = inClass "ARNDCQEGHILMFPSTWYVBZX-"
