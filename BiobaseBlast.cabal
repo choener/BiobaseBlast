@@ -95,6 +95,7 @@ test-suite properties
                , tasty-quickcheck           >= 0.8
                , tasty-silver               >= 3.1.9
                , tasty-th                   >= 0.1
+               , text
                --
                , BiobaseBlast
 
@@ -108,4 +109,3 @@ source-repository this
   type:     git
   location: https://github.com/choener/BiobaseBlast/tree/0.2.0.0
   tag:      0.2.0.0
-
