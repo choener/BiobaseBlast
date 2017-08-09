@@ -5,7 +5,8 @@
 
 module Biobase.BLAST.Import (blastFromFile,
                              parseTabularBlasts,
-                             parseTabularHTTPBlasts
+                             parseTabularHTTPBlasts,
+                             blastHTTPFromFile
                             ) where
 
 import Prelude hiding (takeWhile)
@@ -30,6 +31,15 @@ blastFromFile filePath = do
   if blastFileExists
      then parseTabularBlasts <$> B.readFile filePath
      else fail "# tabular blast file \"%s\" does not exist\n" filePath
+
+  -- | reads and parses tabular HTTP Blast result from provided filePath
+blastHTTPFromFile :: String -> IO [BlastTabularResult]
+blastHTTPFromFile filePath = do
+  printf "# reading tabular blast input from file %s\n" filePath
+  blastFileExists <- doesFileExist filePath
+  if blastFileExists
+      then parseTabularHTTPBlasts <$> B.readFile filePath
+      else fail "# tabular blast file \"%s\" does not exist\n" filePath
 
 -- | Read a lazy bytestring and stream out a lsit of @BlastTabularResult@'s.
 -- In case, there is a parse error "late" in the file, we might have
@@ -80,7 +90,7 @@ genParseTabularBlast = do
 genParseTabularHTTPBlast :: Parser BlastTabularResult
 genParseTabularHTTPBlast = do
   _blastProgram <- genParseBlastProgram <?> "Program"
-  many1 (notChar '\n')
+  --many1 (notChar '\n')
   endOfLine
   string "# Iteration: " <?> "Iteration" -----
   _ <- takeWhile (not . isSpace) <* manyTill anyChar endOfLine <?> "IterationNumber" -----
