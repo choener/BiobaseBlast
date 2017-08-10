@@ -5,7 +5,8 @@
 module Main where
 
 import Test.Tasty
-import Test.Tasty.Silver.Advanced
+import Test.Tasty.Silver ( findByExtension)
+import Test.Tasty.Silver.Advanced (goldenTest1, GDiff(..), GShow(..))
 import Biobase.BLAST.Import
 import System.FilePath ( replaceExtension )
 import qualified Data.Text as T
@@ -24,7 +25,8 @@ allTests = do
 
 succeedTest :: IO TestTree
 succeedTest = do
-  return $ testGroup "succeed" $ [tastyTest "tests/succeed/tabular.test"]
+  files <- findByExtension [".test"] "tests/succeed"  
+  return $ testGroup "succeed" $ map tastyTest files
 
 tastyTest :: FilePath -> TestTree
 tastyTest testFile =
@@ -42,7 +44,8 @@ testBlast testFile = do
 
 succeedHTTPTest :: IO TestTree
 succeedHTTPTest = do
-  return $ testGroup "succeed" $ [tastyHTTPTest "tests/succeed/httptabular.test"]
+  files <- findByExtension [".httptest"] "tests/succeed"
+  return $ testGroup "succeed" $ map tastyHTTPTest files
 
 tastyHTTPTest :: FilePath -> TestTree
 tastyHTTPTest testFile =
