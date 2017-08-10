@@ -25,7 +25,7 @@ allTests = do
 
 succeedTest :: IO TestTree
 succeedTest = do
-  files <- findByExtension [".test"] "tests/succeed"  
+  files <- findByExtension [".test"] "./tests/succeed"  
   return $ testGroup "succeed" $ map tastyTest files
 
 tastyTest :: FilePath -> TestTree
@@ -44,7 +44,7 @@ testBlast testFile = do
 
 succeedHTTPTest :: IO TestTree
 succeedHTTPTest = do
-  files <- findByExtension [".httptest"] "tests/succeed"
+  files <- findByExtension [".httptest"] "./tests/succeed"
   return $ testGroup "succeed" $ map tastyHTTPTest files
 
 tastyHTTPTest :: FilePath -> TestTree
