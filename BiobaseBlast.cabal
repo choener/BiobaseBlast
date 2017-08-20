@@ -32,8 +32,8 @@ description:
 extra-source-files:
   changelog.md
   README.md
-  tests/suceed/*.golden
-  tests/suceed/*.test
+  tests/succeed/*.golden
+  tests/succeed/*.test
 
 library
   build-depends: base             >= 4.7      && < 5.0
