@@ -1,5 +1,5 @@
 name:           BiobaseBlast
-version:        0.2.0.0
+version:        0.2.1.0
 author:         Christian Hoener zu Siederdissen, Florian Eggenhofer
 maintainer:     choener@bioinf.uni-leipzig.de
 homepage:       https://github.com/choener/BiobaseBlast
@@ -32,8 +32,8 @@ description:
 extra-source-files:
   changelog.md
   README.md
-
-
+  tests/succeed/*.golden
+  tests/succeed/*.test
 
 library
   build-depends: base             >= 4.7      && < 5.0
@@ -95,6 +95,7 @@ test-suite properties
                , tasty-quickcheck           >= 0.8
                , tasty-silver               >= 3.1.9
                , tasty-th                   >= 0.1
+               , text
                --
                , BiobaseBlast
 
@@ -106,6 +107,5 @@ source-repository head
 
 source-repository this
   type:     git
-  location: https://github.com/choener/BiobaseBlast/tree/0.2.0.0
-  tag:      0.2.0.0
-
+  location: https://github.com/choener/BiobaseBlast/tree/0.2.1.0
+  tag:      0.2.1.0
