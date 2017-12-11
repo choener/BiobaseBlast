@@ -10,6 +10,7 @@ import           Biobase.Primary.AA (charAA)
 import           Biobase.Types.Odds
 import           Data.PrimitiveArray hiding (map)
 import qualified Biobase.Primary.AA as AA
+import           Biobase.Primary.Letter (getLetter,LimitType(..))
 
 import           Biobase.SubstMatrix
 
@@ -24,5 +25,5 @@ fromFile fname = do
            | (k1,s) <- zip cs ss
            , (k2,z) <- zip cs s
            ]
-  return . AASubstMat $ fromAssocs (Z:.AA.Stop:.AA.Stop) (Z:.AA.Z:.AA.Z) (DLO $ -999) xs
+  return . AASubstMat $ fromAssocs (ZZ:..LtLetter (getLetter AA.Z):..LtLetter (getLetter AA.Z)) (DLO $ -999) xs
 
