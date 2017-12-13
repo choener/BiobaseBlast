@@ -33,7 +33,7 @@ data Distance
 
 -- An amino-acid substitution matrix. Tagged with the type of scoring used.
 
-newtype AASubstMat t = AASubstMat { aaSubstMat :: Unboxed (Z:.Letter AA:.Letter AA) DLO }
+newtype AASubstMat t = AASubstMat { aaSubstMat :: Unboxed (Z:.Letter AA:.Letter AA) DiscretizedLogOdds }
   deriving (Generic,Eq,Read,Show)
 
 --instance Binary    (AASubstMat t)
@@ -53,7 +53,7 @@ type SubstBLOSUM = AASubstMat Distance
 
 -- | Substitution matrix from amino acids to nucleotide triplets.
 
-newtype ANuc3SubstMat t = ANuc3SubstMat { anuc3SubstMat :: Unboxed (Z:.Letter AA:.Letter DNA:.Letter DNA:.Letter DNA) DLO }
+newtype ANuc3SubstMat t = ANuc3SubstMat { anuc3SubstMat :: Unboxed (Z:.Letter AA:.Letter DNA:.Letter DNA:.Letter DNA) DiscretizedLogOdds }
   deriving (Generic,Eq,Read,Show)
 
 --instance Binary    (ANuc3SubstMat t)
@@ -66,7 +66,7 @@ newtype ANuc3SubstMat t = ANuc3SubstMat { anuc3SubstMat :: Unboxed (Z:.Letter AA
 -- | Substitution matrix from amino acids to degenerate nucleotide
 -- 2-tuples. The third nucleotide letter is missing.
 
-newtype ANuc2SubstMat t = ANuc2SubstMat { anuc2SubstMat :: Unboxed (Z:.Letter AA:.Letter DNA:.Letter DNA) DLO }
+newtype ANuc2SubstMat t = ANuc2SubstMat { anuc2SubstMat :: Unboxed (Z:.Letter AA:.Letter DNA:.Letter DNA) DiscretizedLogOdds }
   deriving (Generic,Eq,Read,Show)
 
 --instance Binary    (ANuc2SubstMat t)
@@ -79,7 +79,7 @@ newtype ANuc2SubstMat t = ANuc2SubstMat { anuc2SubstMat :: Unboxed (Z:.Letter AA
 -- | Substitution matrix from amino acids to degenerate nucleotide
 -- 1-tuples. Two out of three nucleotides in a triplet are missing.
 
-newtype ANuc1SubstMat t = ANuc1SubstMat { anuc1SubstMat :: Unboxed (Z:.Letter AA:.Letter DNA) DLO }
+newtype ANuc1SubstMat t = ANuc1SubstMat { anuc1SubstMat :: Unboxed (Z:.Letter AA:.Letter DNA) DiscretizedLogOdds }
   deriving (Generic,Eq,Read,Show)
 
 --instance Binary    (ANuc1SubstMat t)
@@ -105,9 +105,8 @@ mkANuc3SubstMat (AASubstMat m) = ANuc3SubstMat $ fromAssocs (ZZ:..LtLetter 20:..
 -- | Create a 2-tuple to amino acid substitution matrix. Here, @f@ combines
 -- all to entries that have the same 2-tuple index.
 
-{-
-mkANuc2SubstMat :: (DLO -> DLO -> DLO) -> AASubstMat t -> ANuc2SubstMat t
-mkANuc2SubstMat f (AASubstMat m) = ANuc2SubstMat $ fromAssocs (Z:. AA.Stop :. D.A:.D.A) (Z:. AA.Z :. D.N:.D.N) (DLO $ -999)
+mkANuc2SubstMat :: (DiscretizedLogOdds -> DiscretizedLogOdds -> DiscretizedLogOdds) -> AASubstMat t -> ANuc2SubstMat t
+mkANuc2SubstMat f (AASubstMat m) = ANuc2SubstMat $ fromAssocs (ZZ:..LtLetter 20:..LtLetter 5:..LtLetter 5) (DLO $ -999)
   . M.assocs
   . M.fromListWith f
   $ [ ((Z:.a:.x:.y), maybe (DLO $ -999) (\k -> m!(Z:.a:.k)) $ M.lookup uvw dnaAAmap)
@@ -121,8 +120,8 @@ mkANuc2SubstMat f (AASubstMat m) = ANuc2SubstMat $ fromAssocs (Z:. AA.Stop :. D.
 -- the amino-acid / nucleotide substitution. Again, @f@ combines different
 -- entries.
 
-mkANuc1SubstMat :: (DLO -> DLO -> DLO) -> AASubstMat t -> ANuc1SubstMat t
-mkANuc1SubstMat f (AASubstMat m) = ANuc1SubstMat $ fromAssocs (Z:. AA.Stop :. D.A) (Z:. AA.Z :. D.N) (DLO $ -999)
+mkANuc1SubstMat :: (DiscretizedLogOdds -> DiscretizedLogOdds -> DiscretizedLogOdds) -> AASubstMat t -> ANuc1SubstMat t
+mkANuc1SubstMat f (AASubstMat m) = ANuc1SubstMat $ fromAssocs (ZZ:..LtLetter 20:..LtLetter 5) (DLO $ -999)
   . M.assocs
   . M.fromListWith f
   $ [ ((Z:.a:.x), maybe (DLO $ -999) (\k -> m!(Z:.a:.k)) $ M.lookup uvw dnaAAmap)
@@ -131,5 +130,4 @@ mkANuc1SubstMat f (AASubstMat m) = ANuc1SubstMat $ fromAssocs (Z:. AA.Stop :. D.
     , x <- [u,v,w]
     , let uvw = VU.fromList [u,v,w]
     ]
--}
 
