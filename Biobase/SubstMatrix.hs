@@ -95,7 +95,7 @@ newtype ANuc1SubstMat t s = ANuc1SubstMat { anuc1SubstMat :: Unboxed (Z:.Letter 
 -- TODO Definitely use the correct upper bound constants here!
 
 mkANuc3SubstMat :: AASubstMat t DiscLogOdds -> ANuc3SubstMat t DiscLogOdds
-mkANuc3SubstMat (AASubstMat m) = ANuc3SubstMat $ fromAssocs (ZZ:..LtLetter 20:..LtLetter 5:..LtLetter 5:..LtLetter 5) (DiscLogOdds $ -999)
+mkANuc3SubstMat (AASubstMat m) = ANuc3SubstMat $ fromAssocs (ZZ:..LtLetter (length aaRange):..LtLetter 5:..LtLetter 5:..LtLetter 5) (DiscLogOdds $ -999)
   [ ( (Z:.a:.u:.v:.w) , maybe (DiscLogOdds $ -999) (\b -> m!(Z:.a:.b)) $ M.lookup uvw dnaAAmap)
   | a <- aaRange
   , u <- [D.A .. D.N], v <- [D.A .. D.N], w <- [D.A .. D.N]
@@ -106,7 +106,7 @@ mkANuc3SubstMat (AASubstMat m) = ANuc3SubstMat $ fromAssocs (ZZ:..LtLetter 20:..
 -- all to entries that have the same 2-tuple index.
 
 mkANuc2SubstMat :: (DiscLogOdds -> DiscLogOdds -> DiscLogOdds) -> AASubstMat t DiscLogOdds -> ANuc2SubstMat t DiscLogOdds
-mkANuc2SubstMat f (AASubstMat m) = ANuc2SubstMat $ fromAssocs (ZZ:..LtLetter 20:..LtLetter 5:..LtLetter 5) (DiscLogOdds $ -999)
+mkANuc2SubstMat f (AASubstMat m) = ANuc2SubstMat $ fromAssocs (ZZ:..LtLetter (length aaRange):..LtLetter 5:..LtLetter 5) (DiscLogOdds $ -999)
   . M.assocs
   . M.fromListWith f
   $ [ ((Z:.a:.x:.y), maybe (DiscLogOdds $ -999) (\k -> m!(Z:.a:.k)) $ M.lookup uvw dnaAAmap)
@@ -121,7 +121,7 @@ mkANuc2SubstMat f (AASubstMat m) = ANuc2SubstMat $ fromAssocs (ZZ:..LtLetter 20:
 -- entries.
 
 mkANuc1SubstMat :: (DiscLogOdds -> DiscLogOdds -> DiscLogOdds) -> AASubstMat t DiscLogOdds -> ANuc1SubstMat t DiscLogOdds
-mkANuc1SubstMat f (AASubstMat m) = ANuc1SubstMat $ fromAssocs (ZZ:..LtLetter 20:..LtLetter 5) (DiscLogOdds $ -999)
+mkANuc1SubstMat f (AASubstMat m) = ANuc1SubstMat $ fromAssocs (ZZ:..LtLetter (length aaRange):..LtLetter 5) (DiscLogOdds $ -999)
   . M.assocs
   . M.fromListWith f
   $ [ ((Z:.a:.x), maybe (DiscLogOdds $ -999) (\k -> m!(Z:.a:.k)) $ M.lookup uvw dnaAAmap)
