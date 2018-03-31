@@ -60,6 +60,7 @@ library
                     , TemplateHaskell
                     , TypeFamilies
                     , TypeOperators
+                    , UnicodeSyntax
   exposed-modules:
     Biobase.SubstMatrix
     Biobase.SubstMatrix.Import

@@ -4,6 +4,7 @@ module Biobase.SubstMatrix where
 import           Control.DeepSeq (NFData(..))
 import           Data.Aeson (FromJSON,ToJSON)
 import           Data.Binary (Binary)
+import           Data.List (maximumBy)
 import           Data.Serialize (Serialize)
 import           Data.Vector.Unboxed.Deriving
 import           GHC.Generics (Generic)
@@ -94,22 +95,32 @@ newtype ANuc1SubstMat t s = ANuc1SubstMat { anuc1SubstMat :: Unboxed (Z:.Letter 
 --
 -- TODO Definitely use the correct upper bound constants here!
 
-mkANuc3SubstMat :: AASubstMat t DiscLogOdds -> ANuc3SubstMat t DiscLogOdds
-mkANuc3SubstMat (AASubstMat m) = ANuc3SubstMat $ fromAssocs (ZZ:..LtLetter (length aaRange):..LtLetter 5:..LtLetter 5:..LtLetter 5) (DiscLogOdds $ -999)
-  [ ( (Z:.a:.u:.v:.w) , maybe (DiscLogOdds $ -999) (\b -> m!(Z:.a:.b)) $ M.lookup uvw dnaAAmap)
-  | a <- aaRange
-  , u <- [D.A .. D.N], v <- [D.A .. D.N], w <- [D.A .. D.N]
-  , let uvw = VU.fromList [u,v,w]
-  ]
+mkANuc3SubstMat
+  ∷ AASubstMat t DiscLogOdds
+  → ANuc3SubstMat t (Letter AA, DiscLogOdds)
+mkANuc3SubstMat (AASubstMat m)
+  = ANuc3SubstMat
+  $ fromAssocs (ZZ:..LtLetter (length aaRange):..LtLetter 5:..LtLetter 5:..LtLetter 5) (AA.Undef, DiscLogOdds $ -999)
+    [ ( (Z:.a:.u:.v:.w) , maybe (AA.Undef, DiscLogOdds $ -999) (\b -> (b, m!(Z:.a:.b))) $ M.lookup uvw dnaAAmap)
+    | a <- aaRange
+    , u <- [D.A .. D.N], v <- [D.A .. D.N], w <- [D.A .. D.N]
+    , let uvw = VU.fromList [u,v,w]
+    ]
 
 -- | Create a 2-tuple to amino acid substitution matrix. Here, @f@ combines
 -- all to entries that have the same 2-tuple index.
 
-mkANuc2SubstMat :: (DiscLogOdds -> DiscLogOdds -> DiscLogOdds) -> AASubstMat t DiscLogOdds -> ANuc2SubstMat t DiscLogOdds
-mkANuc2SubstMat f (AASubstMat m) = ANuc2SubstMat $ fromAssocs (ZZ:..LtLetter (length aaRange):..LtLetter 5:..LtLetter 5) (DiscLogOdds $ -999)
+mkANuc2SubstMat
+  ∷ ((Z:.Letter AA:.Letter DNA:.Letter DNA) → (Letter AA, DiscLogOdds) → (Letter AA, DiscLogOdds) → Ordering)
+  → AASubstMat t DiscLogOdds
+  → ANuc2SubstMat t (Letter AA, DiscLogOdds)
+mkANuc2SubstMat f (AASubstMat m)
+  = ANuc2SubstMat
+  $ fromAssocs (ZZ:..LtLetter (length aaRange):..LtLetter 5:..LtLetter 5) (AA.Undef, DiscLogOdds $ -999)
   . M.assocs
-  . M.fromListWith f
-  $ [ ((Z:.a:.x:.y), maybe (DiscLogOdds $ -999) (\k -> m!(Z:.a:.k)) $ M.lookup uvw dnaAAmap)
+  . M.mapWithKey (\k → maximumBy (f k))
+  . M.fromListWith (++)
+  $ [ ((Z:.a:.x:.y), [maybe (AA.Undef, DiscLogOdds $ -999) (\k -> (k, m!(Z:.a:.k))) $ M.lookup uvw dnaAAmap])
     | a <- aaRange
     , u <- [D.A .. D.N], v <- [D.A .. D.N], w <- [D.A .. D.N]
     , (x,y) <- [ (u,v), (u,w), (v,w) ]
@@ -120,11 +131,17 @@ mkANuc2SubstMat f (AASubstMat m) = ANuc2SubstMat $ fromAssocs (ZZ:..LtLetter (le
 -- the amino-acid / nucleotide substitution. Again, @f@ combines different
 -- entries.
 
-mkANuc1SubstMat :: (DiscLogOdds -> DiscLogOdds -> DiscLogOdds) -> AASubstMat t DiscLogOdds -> ANuc1SubstMat t DiscLogOdds
-mkANuc1SubstMat f (AASubstMat m) = ANuc1SubstMat $ fromAssocs (ZZ:..LtLetter (length aaRange):..LtLetter 5) (DiscLogOdds $ -999)
+mkANuc1SubstMat
+  ∷ ((Z:.Letter AA:.Letter DNA) → (Letter AA, DiscLogOdds) → (Letter AA, DiscLogOdds) → Ordering)
+  → AASubstMat t DiscLogOdds
+  → ANuc1SubstMat t (Letter AA, DiscLogOdds)
+mkANuc1SubstMat f (AASubstMat m)
+  = ANuc1SubstMat
+  $ fromAssocs (ZZ:..LtLetter (length aaRange):..LtLetter 5) (AA.Undef, DiscLogOdds $ -999)
   . M.assocs
-  . M.fromListWith f
-  $ [ ((Z:.a:.x), maybe (DiscLogOdds $ -999) (\k -> m!(Z:.a:.k)) $ M.lookup uvw dnaAAmap)
+  . M.mapWithKey (\k → maximumBy (f k))
+  . M.fromListWith (++)
+  $ [ ((Z:.a:.x), [maybe (AA.Undef, DiscLogOdds $ -999) (\k -> (k, m!(Z:.a:.k))) $ M.lookup uvw dnaAAmap])
     | a <- aaRange
     , u <- [D.A .. D.N], v <- [D.A .. D.N], w <- [D.A .. D.N]
     , x <- [u,v,w]
