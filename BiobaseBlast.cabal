@@ -45,6 +45,7 @@ library
                , containers
                , deepseq          >= 1.3
                , directory
+               , lens             >= 4.0
                , vector           >= 0.11
                , vector-th-unbox  >= 0.2
                --

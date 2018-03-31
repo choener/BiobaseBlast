@@ -2,6 +2,7 @@
 module Biobase.SubstMatrix where
 
 import           Control.DeepSeq (NFData(..))
+import           Control.Lens
 import           Data.Aeson (FromJSON,ToJSON)
 import           Data.Binary (Binary)
 import           Data.List (maximumBy)
@@ -34,8 +35,9 @@ data Distance
 
 -- An amino-acid substitution matrix. Tagged with the type of scoring used.
 
-newtype AASubstMat t s = AASubstMat { aaSubstMat :: Unboxed (Z:.Letter AA:.Letter AA) s }
+newtype AASubstMat t s = AASubstMat { _aaSubstMat :: Unboxed (Z:.Letter AA:.Letter AA) s }
   deriving (Generic,Eq,Read,Show)
+makeLenses ''AASubstMat
 
 --instance Binary    (AASubstMat t)
 --instance Serialize (AASubstMat t)
@@ -54,8 +56,9 @@ type SubstBLOSUM = AASubstMat Distance DiscLogOdds
 
 -- | Substitution matrix from amino acids to nucleotide triplets.
 
-newtype ANuc3SubstMat t s = ANuc3SubstMat { anuc3SubstMat :: Unboxed (Z:.Letter AA:.Letter DNA:.Letter DNA:.Letter DNA) s }
+newtype ANuc3SubstMat t s = ANuc3SubstMat { _anuc3SubstMat :: Unboxed (Z:.Letter AA:.Letter DNA:.Letter DNA:.Letter DNA) s }
   deriving (Generic,Eq,Read,Show)
+makeLenses ''ANuc3SubstMat
 
 --instance Binary    (ANuc3SubstMat t)
 --instance Serialize (ANuc3SubstMat t)
@@ -67,8 +70,9 @@ newtype ANuc3SubstMat t s = ANuc3SubstMat { anuc3SubstMat :: Unboxed (Z:.Letter 
 -- | Substitution matrix from amino acids to degenerate nucleotide
 -- 2-tuples. The third nucleotide letter is missing.
 
-newtype ANuc2SubstMat t s = ANuc2SubstMat { anuc2SubstMat :: Unboxed (Z:.Letter AA:.Letter DNA:.Letter DNA) s }
+newtype ANuc2SubstMat t s = ANuc2SubstMat { _anuc2SubstMat :: Unboxed (Z:.Letter AA:.Letter DNA:.Letter DNA) s }
   deriving (Generic,Eq,Read,Show)
+makeLenses ''ANuc2SubstMat
 
 --instance Binary    (ANuc2SubstMat t)
 --instance Serialize (ANuc2SubstMat t)
@@ -80,8 +84,9 @@ newtype ANuc2SubstMat t s = ANuc2SubstMat { anuc2SubstMat :: Unboxed (Z:.Letter 
 -- | Substitution matrix from amino acids to degenerate nucleotide
 -- 1-tuples. Two out of three nucleotides in a triplet are missing.
 
-newtype ANuc1SubstMat t s = ANuc1SubstMat { anuc1SubstMat :: Unboxed (Z:.Letter AA:.Letter DNA) s }
+newtype ANuc1SubstMat t s = ANuc1SubstMat { _anuc1SubstMat :: Unboxed (Z:.Letter AA:.Letter DNA) s }
   deriving (Generic,Eq,Read,Show)
+makeLenses ''ANuc1SubstMat
 
 --instance Binary    (ANuc1SubstMat t)
 --instance Serialize (ANuc1SubstMat t)
