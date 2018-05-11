@@ -12,13 +12,15 @@ import           GHC.Generics (Generic)
 import qualified Data.Map.Strict as M
 import qualified Data.Vector.Unboxed as VU
 
+import           Biobase.GeneticCodes.Translation
+import           Biobase.GeneticCodes.Types
 import           Biobase.Primary.AA (AA,aaRange)
 import           Biobase.Primary.Letter
 import           Biobase.Primary.Nuc.DNA (DNA)
-import           Biobase.Primary.Trans (dnaAAmap)
+import           Biobase.Primary.Trans
 import           Data.PrimitiveArray
 import qualified Biobase.Primary.AA as AA
-import qualified Biobase.Primary.Nuc.DNA as D
+import qualified Biobase.Primary.Nuc.DNA as DNA
 import           Statistics.Odds
 
 
@@ -42,9 +44,9 @@ makeLenses ''AASubstMat
 --instance Binary    (AASubstMat t)
 --instance Serialize (AASubstMat t)
 --instance FromJSON  (AASubstMat t)
---instance ToJSON    (AASubstMat t)
+--instance (ToJSON s, VU.Unbox s, Generic s) ⇒ ToJSON    (AASubstMat t s)
 
---instance NFData (AASubstMat t)
+--instance NFData (AASubstMat t s)
 
 -- | @PAM@ matrices are similarity matrices.
 
@@ -101,17 +103,21 @@ makeLenses ''ANuc1SubstMat
 -- TODO Definitely use the correct upper bound constants here!
 
 mkANuc3SubstMat
-  ∷ AASubstMat t DiscLogOdds
+  ∷ TranslationTable (Letter DNA) (Letter AA)
+  → AASubstMat t DiscLogOdds
   → ANuc3SubstMat t (Letter AA, DiscLogOdds)
-mkANuc3SubstMat (AASubstMat m)
+mkANuc3SubstMat tbl (AASubstMat m)
   = ANuc3SubstMat
-  $ fromAssocs (ZZ:..LtLetter (length aaRange):..LtLetter 5:..LtLetter 5:..LtLetter 5) (AA.Undef, DiscLogOdds $ -999)
-    [ ( (Z:.a:.u:.v:.w) , maybe (AA.Undef, DiscLogOdds $ -999) (\b -> (b, m!(Z:.a:.b))) $ M.lookup uvw dnaAAmap)
+  $ fromAssocs (ZZ:..LtLetter AA.Undef:..LtLetter DNA.N:..LtLetter DNA.N:..LtLetter DNA.N) (AA.Undef, DiscLogOdds $ -999)
+    [ ( (Z:.a:.u:.v:.w)
+      , (t, m!(Z:.a:.t))
+      )
     | a <- aaRange
-    , u <- [D.A .. D.N], v <- [D.A .. D.N], w <- [D.A .. D.N]
-    , let uvw = VU.fromList [u,v,w]
+    , u <- [DNA.A .. DNA.N], v <- [DNA.A .. DNA.N], w <- [DNA.A .. DNA.N]
+    , let b = BaseTriplet u v w, let t = translate tbl b
     ]
 
+{-
 -- | Create a 2-tuple to amino acid substitution matrix. Here, @f@ combines
 -- all to entries that have the same 2-tuple index.
 
@@ -127,7 +133,7 @@ mkANuc2SubstMat f (AASubstMat m)
   . M.fromListWith (++)
   $ [ ((Z:.a:.x:.y), [maybe (AA.Undef, DiscLogOdds $ -999) (\k -> (k, m!(Z:.a:.k))) $ M.lookup uvw dnaAAmap])
     | a <- aaRange
-    , u <- [D.A .. D.N], v <- [D.A .. D.N], w <- [D.A .. D.N]
+    , u <- [DNA.A .. DNA.N], v <- [DNA.A .. DNA.N], w <- [DNA.A .. DNA.N]
     , (x,y) <- [ (u,v), (u,w), (v,w) ]
     , let uvw = VU.fromList [u,v,w]
     ]
@@ -148,8 +154,9 @@ mkANuc1SubstMat f (AASubstMat m)
   . M.fromListWith (++)
   $ [ ((Z:.a:.x), [maybe (AA.Undef, DiscLogOdds $ -999) (\k -> (k, m!(Z:.a:.k))) $ M.lookup uvw dnaAAmap])
     | a <- aaRange
-    , u <- [D.A .. D.N], v <- [D.A .. D.N], w <- [D.A .. D.N]
+    , u <- [DNA.A .. DNA.N], v <- [DNA.A .. DNA.N], w <- [DNA.A .. DNA.N]
     , x <- [u,v,w]
     , let uvw = VU.fromList [u,v,w]
     ]
+-}
 

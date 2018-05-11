@@ -1,3 +1,9 @@
+0.3.0.0
+-------
+
+- generalized IO-based functions to MonadIO. This should be non-breaking in
+  most cases.
+
 0.2.0.0
 -------
 
