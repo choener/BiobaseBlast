@@ -3,14 +3,17 @@ module Biobase.SubstMatrix where
 
 import           Control.DeepSeq (NFData(..))
 import           Control.Lens
+import           Control.Monad.Except
+import           Control.Monad.IO.Class
 import           Data.Aeson (FromJSON,ToJSON)
 import           Data.Binary (Binary)
-import           Data.List (maximumBy)
+import           Data.List (maximumBy,find)
 import           Data.Serialize (Serialize)
 import           Data.Vector.Unboxed.Deriving
 import           GHC.Generics (Generic)
 import qualified Data.Map.Strict as M
 import qualified Data.Vector.Unboxed as VU
+import           System.Directory (doesFileExist)
 
 import           Biobase.GeneticCodes.Translation
 import           Biobase.GeneticCodes.Types
@@ -23,79 +26,11 @@ import qualified Biobase.Primary.AA as AA
 import qualified Biobase.Primary.Nuc.DNA as DNA
 import           Statistics.Odds
 
+import           Biobase.SubstMatrix.Embedded
+import           Biobase.SubstMatrix.Import
+import           Biobase.SubstMatrix.Types
 
 
--- | Denotes that we are dealing with a similarity score. Higher is more
--- similar.
-
-data Similarity
-
--- | Denotes that we are dealing with a distance score. Lower is more
--- similar.
-
-data Distance
-
--- An amino-acid substitution matrix. Tagged with the type of scoring used.
-
-newtype AASubstMat t s = AASubstMat { _aaSubstMat :: Unboxed (Z:.Letter AA:.Letter AA) s }
-  deriving (Generic,Eq,Read,Show)
-makeLenses ''AASubstMat
-
---instance Binary    (AASubstMat t)
---instance Serialize (AASubstMat t)
---instance FromJSON  (AASubstMat t)
---instance (ToJSON s, VU.Unbox s, Generic s) ⇒ ToJSON    (AASubstMat t s)
-
---instance NFData (AASubstMat t s)
-
--- | @PAM@ matrices are similarity matrices.
-
-type SubstPAM = AASubstMat Similarity DiscLogOdds
-
--- | @BLOSUM@ matrices are distance matrices.
-
-type SubstBLOSUM = AASubstMat Distance DiscLogOdds
-
--- | Substitution matrix from amino acids to nucleotide triplets.
-
-newtype ANuc3SubstMat t s = ANuc3SubstMat { _anuc3SubstMat :: Unboxed (Z:.Letter AA:.Letter DNA:.Letter DNA:.Letter DNA) s }
-  deriving (Generic,Eq,Read,Show)
-makeLenses ''ANuc3SubstMat
-
---instance Binary    (ANuc3SubstMat t)
---instance Serialize (ANuc3SubstMat t)
---instance FromJSON  (ANuc3SubstMat t)
---instance ToJSON    (ANuc3SubstMat t)
-
---instance NFData (ANuc3SubstMat t)
-
--- | Substitution matrix from amino acids to degenerate nucleotide
--- 2-tuples. The third nucleotide letter is missing.
-
-newtype ANuc2SubstMat t s = ANuc2SubstMat { _anuc2SubstMat :: Unboxed (Z:.Letter AA:.Letter DNA:.Letter DNA) s }
-  deriving (Generic,Eq,Read,Show)
-makeLenses ''ANuc2SubstMat
-
---instance Binary    (ANuc2SubstMat t)
---instance Serialize (ANuc2SubstMat t)
---instance FromJSON  (ANuc2SubstMat t)
---instance ToJSON    (ANuc2SubstMat t)
-
---instance NFData (ANuc2SubstMat t)
-
--- | Substitution matrix from amino acids to degenerate nucleotide
--- 1-tuples. Two out of three nucleotides in a triplet are missing.
-
-newtype ANuc1SubstMat t s = ANuc1SubstMat { _anuc1SubstMat :: Unboxed (Z:.Letter AA:.Letter DNA) s }
-  deriving (Generic,Eq,Read,Show)
-makeLenses ''ANuc1SubstMat
-
---instance Binary    (ANuc1SubstMat t)
---instance Serialize (ANuc1SubstMat t)
---instance FromJSON  (ANuc1SubstMat t)
---instance ToJSON    (ANuc1SubstMat t)
-
---instance NFData (ANuc1SubstMat t)
 
 -- | The usual substitution matrix, but here with a codon and an amino acid
 -- to be compared.
@@ -116,6 +51,17 @@ mkANuc3SubstMat tbl (AASubstMat m)
     , u <- [DNA.A .. DNA.N], v <- [DNA.A .. DNA.N], w <- [DNA.A .. DNA.N]
     , let b = BaseTriplet u v w, let t = translate tbl b
     ]
+
+-- | This function does the following:
+-- 1. check if @fname@ is a file, and if so try to load it.
+-- 2. if not, check if @fname@ happens to be the name of one of the known @PAM/BLOSUM@ tables.
+
+fromFileOrCached ∷ (MonadIO m, MonadError String m) ⇒ FilePath → m (AASubstMat t DiscLogOdds)
+fromFileOrCached fname = do
+  dfe ← liftIO $ doesFileExist fname
+  if | dfe → fromFile fname
+     | Just (k,v) ← find ((fname==).fst) embeddedPamBlosum → return v
+     | otherwise → throwError $ fname ++ " is neither a file nor a known substitution matrix"
 
 {-
 -- | Create a 2-tuple to amino acid substitution matrix. Here, @f@ combines
