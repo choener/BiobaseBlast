@@ -76,6 +76,7 @@ library
     Biobase.SubstMatrix
     Biobase.SubstMatrix.Embedded
     Biobase.SubstMatrix.Import
+    Biobase.SubstMatrix.Types
 
   ghc-options:
     -O2
