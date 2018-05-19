@@ -32,7 +32,7 @@ blastFromFile filePath = do
      then parseTabularBlasts <$> B.readFile filePath
      else fail "# tabular blast file \"%s\" does not exist\n" filePath
 
-  -- | reads and parses tabular HTTP Blast result from provided filePath
+-- | reads and parses tabular HTTP Blast result from provided filePath
 blastHTTPFromFile :: String -> IO [BlastTabularResult]
 blastHTTPFromFile filePath = do
   printf "# reading tabular blast input from file %s\n" filePath
