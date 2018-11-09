@@ -17,7 +17,7 @@ description:
                 This library contains BLAST-related functionality:
                 .
                 - Parser for tabular NCBI BLAST+ output
-		- Parser for JSON2 NCBI BLAST+ output
+                - Parser for JSON2 NCBI BLAST+ output
                 - Parsers for BLOSUM and PAM matrices.
                 - Specialized substitution functions for (in)complete amino
                   acid / nucleotide triplet substitution.
@@ -44,7 +44,7 @@ library
                , attoparsec       >= 0.13
                , binary           >= 0.7
                , bytestring
-	       , text
+               , text
                , cereal           >= 0.4
                , containers
                , deepseq          >= 1.3
