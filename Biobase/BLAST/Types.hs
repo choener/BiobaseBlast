@@ -23,6 +23,7 @@ import GHC.Generics
 import Data.Aeson
 import Data.Aeson.Types
 import qualified Data.HashMap.Strict as HM
+import qualified Data.Sequence as DS
 
 -- | Turn all keys in a JSON object to lowercase.
 jsonLower :: Value -> Value
@@ -30,7 +31,7 @@ jsonLower (Object o) = Object . HM.fromList . map lowerPair . HM.toList $ o
   where lowerPair (key, val) = (T.toLower key, val)
 jsonLower x = x
 
-data BlastJSON2 = BlastJSON2
+newtype BlastJSON2 = BlastJSON2
   { blastoutput2 :: BlastOutput2
   }
   deriving (Show, Eq, Generic, ToJSON)
@@ -40,7 +41,7 @@ instance FromJSON BlastJSON2 where
     where
       opts = defaultOptions { fieldLabelModifier = map toLower}
 
-data BlastOutput2 = BlastOutput2
+newtype BlastOutput2 = BlastOutput2
   { report :: BlastReport
   }
   deriving (Show, Eq, Generic, ToJSON, FromJSON)
@@ -55,9 +56,9 @@ data BlastReport = BlastReport
   }
   deriving (Show, Eq, Generic, ToJSON, FromJSON)
 
-data SearchTarget =  SearchTarget
+newtype SearchTarget =  SearchTarget
   {
-    db :: !T.Text
+    db :: T.Text
   }
   deriving (Show, Eq, Generic, ToJSON, FromJSON)
 
@@ -83,7 +84,7 @@ data Search = Search
     query_id :: !T.Text,
     query_title :: !T.Text,
     query_len :: !Int,
-    hits :: ![Hit],
+    hits :: DS.Seq Hit,
     stat :: !SearchStat
   }
   deriving (Show, Eq, Generic, ToJSON, FromJSON)
