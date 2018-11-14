@@ -60,7 +60,6 @@ library
                , BiobaseXNA       == 0.11.0.*
                , PrimitiveArray   == 0.9.0.*
                , SciBaseTypes     == 0.0.0.*
-	       , BiobaseFasta     == 0.2.0.*
                , unordered-containers
 
   default-language:
