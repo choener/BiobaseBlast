@@ -24,6 +24,7 @@ import Data.Aeson
 import Data.Aeson.Types
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Sequence as DS
+import Control.Lens
 
 -- | Turn all keys in a JSON object to lowercase.
 jsonLower :: Value -> Value
@@ -32,7 +33,8 @@ jsonLower (Object o) = Object . HM.fromList . map lowerPair . HM.toList $ o
 jsonLower x = x
 
 newtype BlastJSON2 = BlastJSON2
-  { blastoutput2 :: BlastOutput2
+  {
+    blastoutput2 :: BlastOutput2
   }
   deriving (Show, Eq, Generic, ToJSON)
 
@@ -42,7 +44,8 @@ instance FromJSON BlastJSON2 where
       opts = defaultOptions { fieldLabelModifier = map toLower}
 
 newtype BlastOutput2 = BlastOutput2
-  { report :: BlastReport
+  {
+    report :: BlastReport
   }
   deriving (Show, Eq, Generic, ToJSON, FromJSON)
 
@@ -128,7 +131,7 @@ data HitDescription = HitDescription
     sciname :: !T.Text
   }
   deriving (Show, Eq, Generic, ToJSON, FromJSON)
-  
+
 data SearchStat = SearchStat {
     db_num :: !Int,
     db_len :: !Int,
@@ -149,7 +152,6 @@ data BlastTabularResult = BlastTabularResult
     hitLines :: !(V.Vector BlastTabularHit)
   }
   deriving (Show, Eq)
-
 
 data BlastTabularHit = BlastTabularHit
   { queryId :: !B.ByteString,
@@ -173,4 +175,18 @@ data BlastTabularHit = BlastTabularHit
 data BlastProgram = BlastX | BlastP | BlastN
   deriving (Show, Eq)
 
+makeLenses ''BlastJSON2
+makeLenses ''BlastOutput2
+makeLenses ''BlastReport
+makeLenses ''Params
+makeLenses ''BlastJSONResult
+makeLenses ''Search
+makeLenses ''Hit
+makeLenses ''Hsp
+makeLenses ''HitDescription
+makeLenses ''SearchStat
+makeLenses ''BlastTabularResult
+makeLenses ''BlastTabularHit
+makeLenses ''SearchTarget
+makeLenses ''BlastProgram
 
