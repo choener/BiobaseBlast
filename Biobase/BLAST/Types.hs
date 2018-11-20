@@ -67,7 +67,7 @@ newtype SearchTarget =  SearchTarget
 
 data Params = Params
   {
-    expect :: !Int,
+    expect :: !Double,
     sc_match :: !Int,
     sc_mismatch :: !Int,
     gap_open :: !Int,
