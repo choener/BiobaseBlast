@@ -3,7 +3,9 @@
 
 -- | Parses NCBI BLAST+ tabular output
 
-module Biobase.BLAST.Import (blastFromFile,
+module Biobase.BLAST.Import (blastJSON2FromFile,
+                             parseJSONBlast,
+                             blastFromFile,
                              parseTabularBlasts,
                              parseTabularHTTPBlasts,
                              blastHTTPFromFile
@@ -22,6 +24,22 @@ import Control.Monad
 import Debug.Trace
 import Text.Printf
 import Biobase.BLAST.Types
+import Data.Aeson as A
+
+-- | reads and parses tabular Blast result from provided filePath
+blastJSON2FromFile :: String -> IO (Either String BlastJSON2)
+blastJSON2FromFile filePath = do
+  printf "# reading blast JSON2 input from file %s\n" filePath
+  blastFileExists <- doesFileExist filePath
+  if blastFileExists
+     then do
+       bs <- B.readFile filePath
+       let json = parseJSONBlast bs
+       return json
+     else fail "# JSON2 blast file \"%s\" does not exist\n" filePath
+
+parseJSONBlast :: B.ByteString -> Either String BlastJSON2
+parseJSONBlast bs = A.eitherDecode bs :: Either String BlastJSON2
 
 -- | reads and parses tabular Blast result from provided filePath
 blastFromFile :: String -> IO [BlastTabularResult]
@@ -32,7 +50,7 @@ blastFromFile filePath = do
      then parseTabularBlasts <$> B.readFile filePath
      else fail "# tabular blast file \"%s\" does not exist\n" filePath
 
-  -- | reads and parses tabular HTTP Blast result from provided filePath
+-- | reads and parses tabular HTTP Blast result from provided filePath
 blastHTTPFromFile :: String -> IO [BlastTabularResult]
 blastHTTPFromFile filePath = do
   printf "# reading tabular blast input from file %s\n" filePath
@@ -182,6 +200,13 @@ genParseBlastHTTPTabularHit = do
     _bitScore <- double <?> "hit bs"
     char '\n'
     return $ BlastTabularHit (B.fromStrict _queryId) (B.fromStrict _subjectId) _seqIdentity _alignmentLength _misMatches _gapOpenScore _queryStart _queryEnd _hitSeqStart _hitSeqEnd _eValue _bitScore 0 B.empty B.empty
+
+-- Blast evalues can be reported as e.g. .051e-22 not supported by double parsing
+readEvalue :: C.ByteString -> Double
+readEvalue eValBs
+  | (head stringEval) == '.' = read ('0':(stringEval)) :: Double
+  | otherwise = read stringEval :: Double
+  where stringEval = C.unpack eValBs
 
 --IUPAC amino acid with gap
 --aminoacidLetters :: Char -> Bool

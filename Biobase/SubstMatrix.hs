@@ -2,114 +2,84 @@
 module Biobase.SubstMatrix where
 
 import           Control.DeepSeq (NFData(..))
+import           Control.Lens
+import           Control.Monad.Except
+import           Control.Monad.IO.Class
 import           Data.Aeson (FromJSON,ToJSON)
 import           Data.Binary (Binary)
+import           Data.List (maximumBy,find)
 import           Data.Serialize (Serialize)
 import           Data.Vector.Unboxed.Deriving
 import           GHC.Generics (Generic)
 import qualified Data.Map.Strict as M
 import qualified Data.Vector.Unboxed as VU
+import           System.Directory (doesFileExist)
 
+import           Biobase.GeneticCodes.Translation
+import           Biobase.GeneticCodes.Types
 import           Biobase.Primary.AA (AA,aaRange)
 import           Biobase.Primary.Letter
 import           Biobase.Primary.Nuc.DNA (DNA)
-import           Biobase.Primary.Trans (dnaAAmap)
-import           Biobase.Types.Odds
+import           Biobase.Primary.Trans
 import           Data.PrimitiveArray
 import qualified Biobase.Primary.AA as AA
-import qualified Biobase.Primary.Nuc.DNA as D
+import qualified Biobase.Primary.Nuc.DNA as DNA
+import           Statistics.Odds
+
+import           Biobase.SubstMatrix.Embedded
+import           Biobase.SubstMatrix.Import
+import           Biobase.SubstMatrix.Types
 
 
-
--- | Denotes that we are dealing with a similarity score. Higher is more
--- similar.
-
-data Similarity
-
--- | Denotes that we are dealing with a distance score. Lower is more
--- similar.
-
-data Distance
-
--- An amino-acid substitution matrix. Tagged with the type of scoring used.
-
-newtype AASubstMat t = AASubstMat { aaSubstMat :: Unboxed (Z:.Letter AA:.Letter AA) DLO }
-  deriving (Generic,Eq,Read,Show)
-
-instance Binary    (AASubstMat t)
-instance Serialize (AASubstMat t)
---instance FromJSON  (AASubstMat t)
---instance ToJSON    (AASubstMat t)
-
-instance NFData (AASubstMat t)
-
--- | @PAM@ matrices are similarity matrices.
-
-type SubstPAM = AASubstMat Similarity
-
--- | @BLOSUM@ matrices are distance matrices.
-
-type SubstBLOSUM = AASubstMat Distance
-
--- | Substitution matrix from amino acids to nucleotide triplets.
-
-newtype ANuc3SubstMat t = ANuc3SubstMat { anuc3SubstMat :: Unboxed (Z:.Letter AA:.Letter DNA:.Letter DNA:.Letter DNA) DLO }
-  deriving (Generic,Eq,Read,Show)
-
-instance Binary    (ANuc3SubstMat t)
-instance Serialize (ANuc3SubstMat t)
---instance FromJSON  (ANuc3SubstMat t)
---instance ToJSON    (ANuc3SubstMat t)
-
-instance NFData (ANuc3SubstMat t)
-
--- | Substitution matrix from amino acids to degenerate nucleotide
--- 2-tuples. The third nucleotide letter is missing.
-
-newtype ANuc2SubstMat t = ANuc2SubstMat { anuc2SubstMat :: Unboxed (Z:.Letter AA:.Letter DNA:.Letter DNA) DLO }
-  deriving (Generic,Eq,Read,Show)
-
-instance Binary    (ANuc2SubstMat t)
-instance Serialize (ANuc2SubstMat t)
---instance FromJSON  (ANuc2SubstMat t)
---instance ToJSON    (ANuc2SubstMat t)
-
-instance NFData (ANuc2SubstMat t)
-
--- | Substitution matrix from amino acids to degenerate nucleotide
--- 1-tuples. Two out of three nucleotides in a triplet are missing.
-
-newtype ANuc1SubstMat t = ANuc1SubstMat { anuc1SubstMat :: Unboxed (Z:.Letter AA:.Letter DNA) DLO }
-  deriving (Generic,Eq,Read,Show)
-
-instance Binary    (ANuc1SubstMat t)
-instance Serialize (ANuc1SubstMat t)
---instance FromJSON  (ANuc1SubstMat t)
---instance ToJSON    (ANuc1SubstMat t)
-
-instance NFData (ANuc1SubstMat t)
 
 -- | The usual substitution matrix, but here with a codon and an amino acid
 -- to be compared.
+--
+-- TODO Definitely use the correct upper bound constants here!
 
-mkANuc3SubstMat :: AASubstMat t -> ANuc3SubstMat t
-mkANuc3SubstMat (AASubstMat m) = ANuc3SubstMat $ fromAssocs (Z:. AA.Stop :. D.A:.D.A:.D.A) (Z:. AA.Z :. D.N:.D.N:.D.N) (DLO $ -999)
-  [ ( (Z:.a:.u:.v:.w) , maybe (DLO $ -999) (\b -> m!(Z:.a:.b)) $ M.lookup uvw dnaAAmap)
-  | a <- aaRange
-  , u <- [D.A .. D.N], v <- [D.A .. D.N], w <- [D.A .. D.N]
-  , let uvw = VU.fromList [u,v,w]
-  ]
+mkANuc3SubstMat
+  ∷ TranslationTable (Letter DNA) (Letter AA)
+  → AASubstMat t DiscLogOdds
+  → ANuc3SubstMat t (Letter AA, DiscLogOdds)
+mkANuc3SubstMat tbl (AASubstMat m)
+  = ANuc3SubstMat
+  $ fromAssocs (ZZ:..LtLetter AA.Undef:..LtLetter DNA.N:..LtLetter DNA.N:..LtLetter DNA.N) (AA.Undef, DiscLogOdds $ -999)
+    [ ( (Z:.a:.u:.v:.w)
+      , (t, m!(Z:.a:.t))
+      )
+    | a <- aaRange
+    , u <- [DNA.A .. DNA.N], v <- [DNA.A .. DNA.N], w <- [DNA.A .. DNA.N]
+    , let b = BaseTriplet u v w, let t = translate tbl b
+    ]
 
+-- | This function does the following:
+-- 1. check if @fname@ is a file, and if so try to load it.
+-- 2. if not, check if @fname@ happens to be the name of one of the known @PAM/BLOSUM@ tables.
+
+fromFileOrCached ∷ (MonadIO m, MonadError String m) ⇒ FilePath → m (AASubstMat t DiscLogOdds)
+fromFileOrCached fname = do
+  dfe ← liftIO $ doesFileExist fname
+  if | dfe → fromFile fname
+     | Just (k,v) ← find ((fname==).fst) embeddedPamBlosum → return v
+     | otherwise → throwError $ fname ++ " is neither a file nor a known substitution matrix"
+
+{-
 -- | Create a 2-tuple to amino acid substitution matrix. Here, @f@ combines
 -- all to entries that have the same 2-tuple index.
 
-mkANuc2SubstMat :: (DLO -> DLO -> DLO) -> AASubstMat t -> ANuc2SubstMat t
-mkANuc2SubstMat f (AASubstMat m) = ANuc2SubstMat $ fromAssocs (Z:. AA.Stop :. D.A:.D.A) (Z:. AA.Z :. D.N:.D.N) (DLO $ -999)
+mkANuc2SubstMat
+  ∷ ((Z:.Letter AA:.Letter DNA:.Letter DNA) → (Letter AA, DiscLogOdds) → (Letter AA, DiscLogOdds) → Ordering)
+  → AASubstMat t DiscLogOdds
+  → ANuc2SubstMat t (Letter AA, DiscLogOdds)
+mkANuc2SubstMat f (AASubstMat m)
+  = ANuc2SubstMat
+  $ fromAssocs (ZZ:..LtLetter (length aaRange):..LtLetter 5:..LtLetter 5) (AA.Undef, DiscLogOdds $ -999)
   . M.assocs
-  . M.fromListWith f
-  $ [ ((Z:.a:.x:.y), maybe (DLO $ -999) (\k -> m!(Z:.a:.k)) $ M.lookup uvw dnaAAmap)
+  . M.mapWithKey (\k → maximumBy (f k))
+  . M.fromListWith (++)
+  $ [ ((Z:.a:.x:.y), [maybe (AA.Undef, DiscLogOdds $ -999) (\k -> (k, m!(Z:.a:.k))) $ M.lookup uvw dnaAAmap])
     | a <- aaRange
-    , u <- [D.A .. D.N], v <- [D.A .. D.N], w <- [D.A .. D.N]
+    , u <- [DNA.A .. DNA.N], v <- [DNA.A .. DNA.N], w <- [DNA.A .. DNA.N]
     , (x,y) <- [ (u,v), (u,w), (v,w) ]
     , let uvw = VU.fromList [u,v,w]
     ]
@@ -118,14 +88,21 @@ mkANuc2SubstMat f (AASubstMat m) = ANuc2SubstMat $ fromAssocs (Z:. AA.Stop :. D.
 -- the amino-acid / nucleotide substitution. Again, @f@ combines different
 -- entries.
 
-mkANuc1SubstMat :: (DLO -> DLO -> DLO) -> AASubstMat t -> ANuc1SubstMat t
-mkANuc1SubstMat f (AASubstMat m) = ANuc1SubstMat $ fromAssocs (Z:. AA.Stop :. D.A) (Z:. AA.Z :. D.N) (DLO $ -999)
+mkANuc1SubstMat
+  ∷ ((Z:.Letter AA:.Letter DNA) → (Letter AA, DiscLogOdds) → (Letter AA, DiscLogOdds) → Ordering)
+  → AASubstMat t DiscLogOdds
+  → ANuc1SubstMat t (Letter AA, DiscLogOdds)
+mkANuc1SubstMat f (AASubstMat m)
+  = ANuc1SubstMat
+  $ fromAssocs (ZZ:..LtLetter (length aaRange):..LtLetter 5) (AA.Undef, DiscLogOdds $ -999)
   . M.assocs
-  . M.fromListWith f
-  $ [ ((Z:.a:.x), maybe (DLO $ -999) (\k -> m!(Z:.a:.k)) $ M.lookup uvw dnaAAmap)
+  . M.mapWithKey (\k → maximumBy (f k))
+  . M.fromListWith (++)
+  $ [ ((Z:.a:.x), [maybe (AA.Undef, DiscLogOdds $ -999) (\k -> (k, m!(Z:.a:.k))) $ M.lookup uvw dnaAAmap])
     | a <- aaRange
-    , u <- [D.A .. D.N], v <- [D.A .. D.N], w <- [D.A .. D.N]
+    , u <- [DNA.A .. DNA.N], v <- [DNA.A .. DNA.N], w <- [DNA.A .. DNA.N]
     , x <- [u,v,w]
     , let uvw = VU.fromList [u,v,w]
     ]
+-}
 
