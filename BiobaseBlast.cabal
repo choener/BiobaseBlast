@@ -11,12 +11,13 @@ license-file:   LICENSE
 build-type:     Simple
 stability:      experimental
 cabal-version:  >= 1.10.0
-tested-with:    GHC == 8.2.2
+tested-with:    GHC == 8.4.3
 synopsis:       BLAST-related tools
 description:
                 This library contains BLAST-related functionality:
                 .
                 - Parser for tabular NCBI BLAST+ output
+                - Parser for JSON2 NCBI BLAST+ output
                 - Parsers for BLOSUM and PAM matrices.
                 - Specialized substitution functions for (in)complete amino
                   acid / nucleotide triplet substitution.
@@ -43,6 +44,7 @@ library
                , attoparsec       >= 0.13
                , binary           >= 0.7
                , bytestring
+               , text
                , cereal           >= 0.4
                , containers
                , deepseq          >= 1.3
@@ -58,6 +60,7 @@ library
                , BiobaseXNA       == 0.11.0.*
                , PrimitiveArray   == 0.9.0.*
                , SciBaseTypes     == 0.0.0.*
+               , unordered-containers
 
   default-language:
     Haskell2010
@@ -119,5 +122,5 @@ source-repository head
 
 source-repository this
   type:     git
-  location: https://github.com/choener/BiobaseBlast/tree/0.2.1.0
-  tag:      0.2.1.0
+  location: https://github.com/choener/BiobaseBlast/tree/0.3.0.0
+  tag:      0.3.0.0
