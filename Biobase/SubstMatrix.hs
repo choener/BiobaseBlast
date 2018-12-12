@@ -35,28 +35,31 @@ import           Biobase.SubstMatrix.Types
 -- | The usual substitution matrix, but here with a codon and an amino acid
 -- to be compared.
 --
+-- The resulting @AA@ are tagged with the name type from the @DNA n@.
+--
 -- TODO Definitely use the correct upper bound constants here!
 
 mkANuc3SubstMat
-  ∷ TranslationTable (Letter DNA) (Letter AA)
-  → AASubstMat t DiscLogOdds
-  → ANuc3SubstMat t (Letter AA, DiscLogOdds)
+  ∷ TranslationTable (Letter DNA n) (Letter AA n)
+  → AASubstMat t DiscLogOdds n
+  → ANuc3SubstMat t (Letter AA n, DiscLogOdds) n n
 mkANuc3SubstMat tbl (AASubstMat m)
   = ANuc3SubstMat
   $ fromAssocs (ZZ:..LtLetter AA.Undef:..LtLetter DNA.N:..LtLetter DNA.N:..LtLetter DNA.N) (AA.Undef, DiscLogOdds $ -999)
     [ ( (Z:.a:.u:.v:.w)
       , (t, m!(Z:.a:.t))
       )
-    | a <- aaRange
+    | a <- VU.toList aaRange
     , u <- [DNA.A .. DNA.N], v <- [DNA.A .. DNA.N], w <- [DNA.A .. DNA.N]
-    , let b = BaseTriplet u v w, let t = translate tbl b
+    , let b = BaseTriplet u v w
+    , let t = translate tbl b
     ]
 
 -- | This function does the following:
 -- 1. check if @fname@ is a file, and if so try to load it.
 -- 2. if not, check if @fname@ happens to be the name of one of the known @PAM/BLOSUM@ tables.
 
-fromFileOrCached ∷ (MonadIO m, MonadError String m) ⇒ FilePath → m (AASubstMat t DiscLogOdds)
+fromFileOrCached ∷ (MonadIO m, MonadError String m) ⇒ FilePath → m (AASubstMat t DiscLogOdds a)
 fromFileOrCached fname = do
   dfe ← liftIO $ doesFileExist fname
   if | dfe → fromFile fname

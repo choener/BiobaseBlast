@@ -16,8 +16,9 @@ import Biobase.SubstMatrix.Types
 embeddedPamBlosumFiles ∷ [(FilePath,ByteString)]
 embeddedPamBlosumFiles = $(embedDir "sources/PamBlosum")
 
-embeddedPamBlosum ∷ [(FilePath,AASubstMat t DiscLogOdds)]
+embeddedPamBlosum ∷ [(FilePath,AASubstMat t DiscLogOdds a)]
 embeddedPamBlosum = either error id . runExcept
                   . mapM (\(k,v) → fromByteString v >>= \mv → return (k,mv))
                   $ embeddedPamBlosumFiles
+{-# NoInline embeddedPamBlosum #-}
 

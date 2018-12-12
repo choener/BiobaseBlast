@@ -24,7 +24,7 @@ data Distance
 
 -- An amino-acid substitution matrix. Tagged with the type of scoring used.
 
-newtype AASubstMat t s = AASubstMat { _aaSubstMat :: Unboxed (Z:.Letter AA:.Letter AA) s }
+newtype AASubstMat t s a = AASubstMat { _aaSubstMat :: Unboxed (Z:.Letter AA a:.Letter AA a) s }
   deriving (Generic,Eq,Read,Show)
 makeLenses ''AASubstMat
 
@@ -45,7 +45,7 @@ type SubstBLOSUM = AASubstMat Distance DiscLogOdds
 
 -- | Substitution matrix from amino acids to nucleotide triplets.
 
-newtype ANuc3SubstMat t s = ANuc3SubstMat { _anuc3SubstMat :: Unboxed (Z:.Letter AA:.Letter DNA:.Letter DNA:.Letter DNA) s }
+newtype ANuc3SubstMat t s a n = ANuc3SubstMat { _anuc3SubstMat :: Unboxed (Z:.Letter AA a:.Letter DNA n:.Letter DNA n:.Letter DNA n) s }
   deriving (Generic,Eq,Read,Show)
 makeLenses ''ANuc3SubstMat
 
@@ -59,7 +59,7 @@ makeLenses ''ANuc3SubstMat
 -- | Substitution matrix from amino acids to degenerate nucleotide
 -- 2-tuples. The third nucleotide letter is missing.
 
-newtype ANuc2SubstMat t s = ANuc2SubstMat { _anuc2SubstMat :: Unboxed (Z:.Letter AA:.Letter DNA:.Letter DNA) s }
+newtype ANuc2SubstMat t s a n = ANuc2SubstMat { _anuc2SubstMat :: Unboxed (Z:.Letter AA a:.Letter DNA n:.Letter DNA n) s }
   deriving (Generic,Eq,Read,Show)
 makeLenses ''ANuc2SubstMat
 
@@ -73,7 +73,7 @@ makeLenses ''ANuc2SubstMat
 -- | Substitution matrix from amino acids to degenerate nucleotide
 -- 1-tuples. Two out of three nucleotides in a triplet are missing.
 
-newtype ANuc1SubstMat t s = ANuc1SubstMat { _anuc1SubstMat :: Unboxed (Z:.Letter AA:.Letter DNA) s }
+newtype ANuc1SubstMat t s a n = ANuc1SubstMat { _anuc1SubstMat :: Unboxed (Z:.Letter AA a:.Letter DNA n) s }
   deriving (Generic,Eq,Read,Show)
 makeLenses ''ANuc1SubstMat
 

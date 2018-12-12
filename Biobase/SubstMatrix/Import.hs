@@ -24,7 +24,7 @@ import           Biobase.SubstMatrix.Types
 
 -- | Import substituion matrix from a bytestring.
 
-fromByteString ∷ (MonadError String m) ⇒ ByteString → m (AASubstMat t DiscLogOdds)
+fromByteString ∷ (MonadError String m) ⇒ ByteString → m (AASubstMat t DiscLogOdds a)
 fromByteString bs = do
   let (x:xs) = dropWhile (("#"==).take 1) . lines $ unpack bs
   let cs = map head . words $ x -- should give us the characters encoding an amino acid
@@ -37,6 +37,6 @@ fromByteString bs = do
 
 -- | Import substitution matrix from file.
 
-fromFile ∷ (MonadIO m, MonadError String m) ⇒ FilePath → m (AASubstMat t DiscLogOdds)
+fromFile ∷ (MonadIO m, MonadError String m) ⇒ FilePath → m (AASubstMat t DiscLogOdds a)
 fromFile fname = liftIO (BS.readFile fname) >>= fromByteString
 

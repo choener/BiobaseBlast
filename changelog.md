@@ -4,6 +4,7 @@
 - generalized IO-based functions to MonadIO. This should be non-breaking in
   most cases.
 - Added parsing functionality for JSON2 NCBI BLAST+ output
+- currently tags all DNA/AA letters with ()
 
 0.2.0.0
 -------
