@@ -78,6 +78,7 @@ library
     Biobase.BLAST.Types
     Biobase.SubstMatrix
     Biobase.SubstMatrix.Embedded
+    Biobase.SubstMatrix.Hints
     Biobase.SubstMatrix.Import
     Biobase.SubstMatrix.Types
 
