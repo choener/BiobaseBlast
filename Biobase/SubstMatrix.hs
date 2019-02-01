@@ -25,6 +25,7 @@ import           Data.PrimitiveArray
 import qualified Biobase.Primary.AA as AA
 import qualified Biobase.Primary.Nuc.DNA as DNA
 import           Statistics.Odds
+import           Numeric.Discretized
 
 import           Biobase.SubstMatrix.Embedded
 import           Biobase.SubstMatrix.Import
@@ -41,11 +42,11 @@ import           Biobase.SubstMatrix.Types
 
 mkANuc3SubstMat
   ∷ TranslationTable (Letter DNA n) (Letter AA n)
-  → AASubstMat t DiscLogOdds n
-  → ANuc3SubstMat t (Letter AA n, DiscLogOdds) n n
+  → AASubstMat t (DiscLogOdds k) n
+  → ANuc3SubstMat t (Letter AA n, (DiscLogOdds k)) n n
 mkANuc3SubstMat tbl (AASubstMat m)
   = ANuc3SubstMat
-  $ fromAssocs (ZZ:..LtLetter AA.Undef:..LtLetter DNA.N:..LtLetter DNA.N:..LtLetter DNA.N) (AA.Undef, DiscLogOdds $ -999)
+  $ fromAssocs (ZZ:..LtLetter AA.Undef:..LtLetter DNA.N:..LtLetter DNA.N:..LtLetter DNA.N) (AA.Undef, DiscLogOdds . Discretized $ -999)
     [ ( (Z:.a:.u:.v:.w)
       , (t, m!(Z:.a:.t))
       )
@@ -59,7 +60,7 @@ mkANuc3SubstMat tbl (AASubstMat m)
 -- 1. check if @fname@ is a file, and if so try to load it.
 -- 2. if not, check if @fname@ happens to be the name of one of the known @PAM/BLOSUM@ tables.
 
-fromFileOrCached ∷ (MonadIO m, MonadError String m) ⇒ FilePath → m (AASubstMat t DiscLogOdds a)
+fromFileOrCached ∷ (MonadIO m, MonadError String m) ⇒ FilePath → m (AASubstMat t (DiscLogOdds Unknown) a)
 fromFileOrCached fname = do
   dfe ← liftIO $ doesFileExist fname
   if | dfe → fromFile fname

@@ -4,11 +4,13 @@ module Biobase.SubstMatrix.Types where
 import Control.Lens
 import GHC.Generics (Generic)
 
+import Algebra.Structure.Semiring
 import Biobase.Primary.AA (AA,aaRange)
 import Biobase.Primary.Letter
 import Biobase.Primary.Nuc.DNA (DNA)
 import Data.PrimitiveArray
 import Statistics.Odds
+import Numeric.Discretized
 
 
 
@@ -37,11 +39,11 @@ makeLenses ''AASubstMat
 
 -- | @PAM@ matrices are similarity matrices.
 
-type SubstPAM = AASubstMat Similarity DiscLogOdds
+type SubstPAM = AASubstMat Similarity (DiscLogOdds Unknown)
 
 -- | @BLOSUM@ matrices are distance matrices.
 
-type SubstBLOSUM = AASubstMat Distance DiscLogOdds
+type SubstBLOSUM = AASubstMat Distance (DiscLogOdds Unknown)
 
 -- | Substitution matrix from amino acids to nucleotide triplets.
 
@@ -84,3 +86,9 @@ makeLenses ''ANuc1SubstMat
 
 --instance NFData (ANuc1SubstMat t)
 
+
+
+data GapCost t = GapCost
+  { gcInit ∷ !t
+  , gcCont ∷ !t
+  }

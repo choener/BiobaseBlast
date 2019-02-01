@@ -15,6 +15,7 @@ import           System.Directory (doesFileExist)
 import           Biobase.Primary.AA (charAA)
 import           Biobase.Primary.Letter (getLetter,LimitType(..))
 import           Data.PrimitiveArray hiding (map)
+import           Numeric.Discretized
 import qualified Biobase.Primary.AA as AA
 import           Statistics.Odds
 
@@ -24,7 +25,7 @@ import           Biobase.SubstMatrix.Types
 
 -- | Import substituion matrix from a bytestring.
 
-fromByteString ∷ (MonadError String m) ⇒ ByteString → m (AASubstMat t DiscLogOdds a)
+fromByteString ∷ (MonadError String m) ⇒ ByteString → m (AASubstMat t (DiscLogOdds k) a)
 fromByteString bs = do
   let (x:xs) = dropWhile (("#"==).take 1) . lines $ unpack bs
   let cs = map head . words $ x -- should give us the characters encoding an amino acid
@@ -33,10 +34,10 @@ fromByteString bs = do
            | (k1,s) <- zip cs ss
            , (k2,z) <- zip cs s
            ]
-  return . AASubstMat $ fromAssocs (ZZ:..LtLetter AA.Z:..LtLetter AA.Z) (DiscLogOdds $ -999) xs
+  return . AASubstMat $ fromAssocs (ZZ:..LtLetter AA.Z:..LtLetter AA.Z) (DiscLogOdds . Discretized $ -999) xs
 
 -- | Import substitution matrix from file.
 
-fromFile ∷ (MonadIO m, MonadError String m) ⇒ FilePath → m (AASubstMat t DiscLogOdds a)
+fromFile ∷ (MonadIO m, MonadError String m) ⇒ FilePath → m (AASubstMat t (DiscLogOdds k) a)
 fromFile fname = liftIO (BS.readFile fname) >>= fromByteString
 
