@@ -50,6 +50,7 @@ library
                , directory
                , file-embed       >= 0.0.10
                , lens             >= 4.0
+               , log-domain       >= 0.12
                , mtl              >= 2.0
                , text
                , unordered-containers
@@ -72,6 +73,7 @@ library
                     , MultiWayIf
                     , PolyKinds
                     , TemplateHaskell
+                    , TypeApplications
                     , TypeFamilies
                     , TypeOperators
                     , UnicodeSyntax

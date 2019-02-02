@@ -11,6 +11,7 @@ import           Data.List (maximumBy,find)
 import           Data.Serialize (Serialize)
 import           Data.Vector.Unboxed.Deriving
 import           GHC.Generics (Generic)
+import           Numeric.Log
 import qualified Data.Map.Strict as M
 import qualified Data.Vector.Unboxed as VU
 import           System.Directory (doesFileExist)
@@ -21,11 +22,13 @@ import           Biobase.Primary.AA (AA,aaRange)
 import           Biobase.Primary.Letter
 import           Biobase.Primary.Nuc.DNA (DNA)
 import           Biobase.Primary.Trans
-import           Data.PrimitiveArray
+import           Data.PrimitiveArray as PA
+import           Numeric.Discretized
 import qualified Biobase.Primary.AA as AA
 import qualified Biobase.Primary.Nuc.DNA as DNA
 import           Statistics.Odds
-import           Numeric.Discretized
+import           Statistics.Probability
+import           StatisticalMechanics.Ensemble
 
 import           Biobase.SubstMatrix.Embedded
 import           Biobase.SubstMatrix.Import
@@ -66,6 +69,19 @@ fromFileOrCached fname = do
   if | dfe → fromFile fname
      | Just (k,v) ← find ((fname==).fst) embeddedPamBlosum → return v
      | otherwise → throwError $ fname ++ " is neither a file nor a known substitution matrix"
+
+-- | Turn log-odds into log-probabilities. Normalizes over the whole set of
+-- values in the matrix.
+
+mkProbabilityMatrix
+  ∷ Double
+  → AASubstMat t (DiscLogOdds k) n
+  → AASubstMat t (Log (Probability NotNormalized Double)) n
+mkProbabilityMatrix invScale (AASubstMat dlo) = AASubstMat $ PA.map (/nrm) $ dbl
+  where dbl = PA.map (\(DiscLogOdds (Discretized k)) → stateLogProbability (negate invScale) $ fromIntegral @Int @Double k) dlo
+        nrm = maximum . Prelude.map snd $ PA.assocs dbl
+
+
 
 {-
 -- | Create a 2-tuple to amino acid substitution matrix. Here, @f@ combines
