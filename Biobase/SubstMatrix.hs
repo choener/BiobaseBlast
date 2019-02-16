@@ -18,17 +18,18 @@ import           System.Directory (doesFileExist)
 
 import           Biobase.GeneticCodes.Translation
 import           Biobase.GeneticCodes.Types
-import           Biobase.Primary.AA (AA,aaRange)
+import           Biobase.Primary.AA (aaRange)
 import           Biobase.Primary.Letter
-import           Biobase.Primary.Nuc.DNA (DNA)
+import           Biobase.Primary.Nuc.DNA ()
 import           Biobase.Primary.Trans
+import           Biobase.Types.BioSequence (DNA,AA)
 import           Data.PrimitiveArray as PA
 import           Numeric.Discretized
 import qualified Biobase.Primary.AA as AA
 import qualified Biobase.Primary.Nuc.DNA as DNA
+import           StatisticalMechanics.Ensemble
 import           Statistics.Odds
 import           Statistics.Probability
-import           StatisticalMechanics.Ensemble
 
 import           Biobase.SubstMatrix.Embedded
 import           Biobase.SubstMatrix.Import

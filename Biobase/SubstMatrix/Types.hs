@@ -5,9 +5,10 @@ import Control.Lens
 import GHC.Generics (Generic)
 
 import Algebra.Structure.Semiring
-import Biobase.Primary.AA (AA,aaRange)
+import Biobase.Types.BioSequence (AA,DNA)
+import Biobase.Primary.AA (aaRange)
 import Biobase.Primary.Letter
-import Biobase.Primary.Nuc.DNA (DNA)
+import Biobase.Primary.Nuc.DNA ()
 import Data.PrimitiveArray
 import Statistics.Odds
 import Numeric.Discretized
