@@ -15,6 +15,8 @@ import           Numeric.Log
 import qualified Data.Map.Strict as M
 import qualified Data.Vector.Unboxed as VU
 import           System.Directory (doesFileExist)
+import           System.Exit (exitSuccess)
+import           Text.Printf
 
 import           Biobase.GeneticCodes.Translation
 import           Biobase.GeneticCodes.Types
@@ -67,7 +69,10 @@ mkANuc3SubstMat tbl (AASubstMat m)
 fromFileOrCached ∷ (MonadIO m, MonadError String m) ⇒ FilePath → m (AASubstMat t (DiscLogOdds Unknown) a)
 fromFileOrCached fname = do
   dfe ← liftIO $ doesFileExist fname
-  if | dfe → fromFile fname
+  if | fname == "list" → do
+        mapM_ (liftIO . printf "%s\n" . fst) embeddedPamBlosum
+        liftIO exitSuccess
+     | dfe → fromFile fname
      | Just (k,v) ← find ((fname==).fst) embeddedPamBlosum → return v
      | otherwise → throwError $ fname ++ " is neither a file nor a known substitution matrix"
 
