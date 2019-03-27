@@ -25,6 +25,7 @@ import           Biobase.Primary.Letter
 import           Biobase.Primary.Nuc.DNA ()
 import           Biobase.Primary.Trans
 import           Biobase.Types.BioSequence (DNA,AA)
+import           Biobase.Types.Codon
 import           Data.PrimitiveArray as PA
 import           Numeric.Discretized
 import qualified Biobase.Primary.AA as AA
@@ -58,7 +59,7 @@ mkANuc3SubstMat tbl (AASubstMat m)
       )
     | a <- VU.toList aaRange
     , u <- [DNA.A .. DNA.N], v <- [DNA.A .. DNA.N], w <- [DNA.A .. DNA.N]
-    , let b = BaseTriplet u v w
+    , let b = Codon u v w
     , let t = translate tbl b
     ]
 
