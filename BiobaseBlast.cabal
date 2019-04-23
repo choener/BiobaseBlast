@@ -1,23 +1,22 @@
 name:           BiobaseBlast
-version:        0.3.0.0
+version:        0.2.1.0
 author:         Christian Hoener zu Siederdissen, Florian Eggenhofer
 maintainer:     choener@bioinf.uni-leipzig.de
 homepage:       https://github.com/choener/BiobaseBlast
 bug-reports:    https://github.com/choener/BiobaseBlast/issues
-copyright:      Christian Hoener zu Siederdissen, 2013 - 2018
+copyright:      Christian Hoener zu Siederdissen, 2013 - 2017
 category:       Bioinformatics
 license:        GPL-3
 license-file:   LICENSE
 build-type:     Simple
 stability:      experimental
 cabal-version:  >= 1.10.0
-tested-with:    GHC == 8.4.3
+tested-with:    GHC == 7.10.3, GHC == 8.0.1, GHC == 8.0.2
 synopsis:       BLAST-related tools
 description:
                 This library contains BLAST-related functionality:
                 .
                 - Parser for tabular NCBI BLAST+ output
-                - Parser for JSON2 NCBI BLAST+ output
                 - Parsers for BLOSUM and PAM matrices.
                 - Specialized substitution functions for (in)complete amino
                   acid / nucleotide triplet substitution.
@@ -35,8 +34,6 @@ extra-source-files:
   README.md
   tests/succeed/*.golden
   tests/succeed/*.test
-  sources/BLOSUM*
-  sources/PAM*
 
 library
   build-depends: base             >= 4.7      && < 5.0
@@ -44,42 +41,30 @@ library
                , attoparsec       >= 0.13
                , binary           >= 0.7
                , bytestring
-               , text
                , cereal           >= 0.4
                , containers
                , deepseq          >= 1.3
                , directory
-               , file-embed       >= 0.0.10
-               , lens             >= 4.0
-               , mtl              >= 2.0
-               , vector           >= 0.11
+               , vector           >= 0.10
                , vector-th-unbox  >= 0.2
                --
-               , BiobaseENA       == 0.0.0.*
-               , BiobaseTypes     == 0.1.3.*
-               , BiobaseXNA       == 0.11.0.*
-               , PrimitiveArray   == 0.9.0.*
-               , SciBaseTypes     == 0.0.0.*
-               , unordered-containers
+               , BiobaseTypes     == 0.1.2.*
+               , BiobaseXNA       == 0.9.3.*
+               , PrimitiveArray   == 0.8.0.*
 
   default-language:
     Haskell2010
   default-extensions: DeriveGeneric
-                    , FlexibleContexts
                     , MultiParamTypeClasses
-                    , MultiWayIf
                     , TemplateHaskell
                     , TypeFamilies
                     , TypeOperators
-                    , UnicodeSyntax
   exposed-modules:
+    Biobase.SubstMatrix
+    Biobase.SubstMatrix.Import
     Biobase.BLAST
     Biobase.BLAST.Import
     Biobase.BLAST.Types
-    Biobase.SubstMatrix
-    Biobase.SubstMatrix.Embedded
-    Biobase.SubstMatrix.Import
-    Biobase.SubstMatrix.Types
 
   ghc-options:
     -O2
@@ -122,5 +107,5 @@ source-repository head
 
 source-repository this
   type:     git
-  location: https://github.com/choener/BiobaseBlast/tree/0.3.0.0
-  tag:      0.3.0.0
+  location: https://github.com/choener/BiobaseBlast/tree/0.2.1.0
+  tag:      0.2.1.0
