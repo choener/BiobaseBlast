@@ -40,6 +40,12 @@ newtype BlastJSON2 = BlastJSON2
   }
   deriving (Show, Eq, Generic)
 
+newtype BlastCmdJSON2 = BlastCmdJSON2
+  {
+    _blastcmdoutput2 :: [BlastOutput2]
+  }
+  deriving (Show, Eq, Generic)
+
 --instance FromJSON BlastJSON2 where
 --  parseJSON = genericParseJSON opts . jsonLower
 --    where
@@ -150,8 +156,8 @@ data HitDescription = HitDescription
     _id :: !T.Text,
     _accession :: !T.Text,
     _title :: !T.Text,
-    _taxid :: !Int,
-    _sciname :: !T.Text
+    _taxid :: !Int
+    --_sciname :: !T.Text
   }
   deriving (Show, Eq, Generic)
 
@@ -198,16 +204,25 @@ data BlastTabularHit = BlastTabularHit
 data BlastProgram = BlastX | BlastP | BlastN
   deriving (Show, Eq)
 
+makeLenses ''BlastCmdJSON2
+--deriveJSON defaultOptions{fieldLabelModifier = (map toLower) . drop 1} ''BlastJSON2
+instance FromJSON BlastCmdJSON2 where
+  parseJSON (Object v) =
+    BlastCmdJSON2 <$> (v .: "BlastOutput2")
+  parseJSON _ = mzero
+instance ToJSON BlastCmdJSON2 where
+  toJSON (BlastCmdJSON2 _blastoutput2) =
+        object [ "BlastOutput2"  Data.Aeson.Types..= _blastoutput2 ]
+
 makeLenses ''BlastJSON2
 --deriveJSON defaultOptions{fieldLabelModifier = (map toLower) . drop 1} ''BlastJSON2
 instance FromJSON BlastJSON2 where
-  parseJSON (Object v) =
-    BlastJSON2 <$> v .: "BlastOutput2"
+  parseJSON (Object v) = BlastJSON2 <$> (v .: "BlastOutput2")
   parseJSON _ = mzero
-instance ToJSON BlastJSON2 where
-  toJSON (BlastJSON2 _blastoutput2) =
-        object [ "BlastOutput2"  Data.Aeson.Types..= _blastoutput2 ]
 
+instance ToJSON BlastJSON2 where
+  toJSON (BlastJSON2 _blastoutput2) = object [ "BlastOutput2"  Data.Aeson.Types..= _blastoutput2 ]
+--deriveJSON defaultOptions{fieldLabelModifier = drop 1} ''BlastJSON2
 makeLenses ''BlastOutput2
 deriveJSON defaultOptions{fieldLabelModifier = drop 1} ''BlastOutput2
 makeLenses ''BlastReport
