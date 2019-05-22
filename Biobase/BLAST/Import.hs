@@ -3,7 +3,7 @@
 
 -- | Parses NCBI BLAST+ tabular output
 
-module Biobase.BLAST.Import (blastJSON2FromFile,
+module Biobase.BLAST.Import (blastCmdJSON2FromFile,
                              parseJSONBlast,
                              blastFromFile,
                              parseTabularBlasts,
@@ -27,16 +27,19 @@ import Biobase.BLAST.Types
 import Data.Aeson as A
 
 -- | reads and parses tabular Blast result from provided filePath
-blastJSON2FromFile :: String -> IO (Either String BlastJSON2)
-blastJSON2FromFile filePath = do
+blastCmdJSON2FromFile :: String -> IO (Either String BlastCmdJSON2)
+blastCmdJSON2FromFile filePath = do
   printf "# reading blast JSON2 input from file %s\n" filePath
   blastFileExists <- doesFileExist filePath
   if blastFileExists
      then do
        bs <- B.readFile filePath
-       let json = parseJSONBlast bs
+       let json = parseJSONBlastCmd bs
        return json
      else fail "# JSON2 blast file \"%s\" does not exist\n" filePath
+
+parseJSONBlastCmd :: B.ByteString -> Either String BlastCmdJSON2
+parseJSONBlastCmd bs = A.eitherDecode bs :: Either String BlastCmdJSON2
 
 parseJSONBlast :: B.ByteString -> Either String BlastJSON2
 parseJSONBlast bs = A.eitherDecode bs :: Either String BlastJSON2
