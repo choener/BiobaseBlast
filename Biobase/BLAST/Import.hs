@@ -24,7 +24,7 @@ import Control.Monad
 import Debug.Trace
 import Text.Printf
 import Biobase.BLAST.Types
-import Data.Aeson as A
+import qualified Data.Aeson as A
 
 -- | reads and parses tabular Blast result from provided filePath
 blastCmdJSON2FromFile :: String -> IO (Either String BlastCmdJSON2)

@@ -1,3 +1,9 @@
+0.3.0.1
+-------
+
+- Fix for newly ambigous ? operator export from attoparsec and aeson>=1.4.4.0 
+  in Import module 
+
 0.3.0.0
 -------
 

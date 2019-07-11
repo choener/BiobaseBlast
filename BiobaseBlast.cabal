@@ -1,5 +1,5 @@
 name:           BiobaseBlast
-version:        0.3.0.0
+version:        0.3.0.1
 author:         Christian Hoener zu Siederdissen, Florian Eggenhofer
 maintainer:     choener@bioinf.uni-leipzig.de
 homepage:       https://github.com/choener/BiobaseBlast
@@ -221,5 +221,5 @@ source-repository head
 
 source-repository this
   type:     git
-  location: https://github.com/choener/BiobaseBlast/tree/0.3.0.0
-  tag:      0.3.0.0
+  location: https://github.com/choener/BiobaseBlast/tree/0.3.0.1
+  tag:      0.3.0.1
