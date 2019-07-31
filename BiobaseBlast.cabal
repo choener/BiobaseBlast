@@ -178,6 +178,7 @@ library
     Biobase.SubstMatrix.Embedded
     Biobase.SubstMatrix.Hints
     Biobase.SubstMatrix.Import
+    Biobase.SubstMatrix.Statistics
     Biobase.SubstMatrix.Types
 
   ghc-options:
