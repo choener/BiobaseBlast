@@ -40,11 +40,11 @@ makeLenses ''AASubstMat
 
 -- | @PAM@ matrices are similarity matrices.
 
-type SubstPAM = AASubstMat Similarity (DiscLogOdds Unknown)
+type SubstPAM = AASubstMat Similarity (DiscLogOdds (RTyId 1))
 
 -- | @BLOSUM@ matrices are distance matrices.
 
-type SubstBLOSUM = AASubstMat Distance (DiscLogOdds Unknown)
+type SubstBLOSUM = AASubstMat Distance (DiscLogOdds (RTyId 1))
 
 -- | Substitution matrix from amino acids to nucleotide triplets.
 

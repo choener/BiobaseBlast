@@ -17,6 +17,7 @@ import qualified Data.Vector.Unboxed as VU
 import           System.Directory (doesFileExist)
 import           System.Exit (exitSuccess)
 import           Text.Printf
+import           GHC.Real(Ratio(..))
 
 import           Biobase.GeneticCodes.Translation
 import           Biobase.GeneticCodes.Types
@@ -36,6 +37,7 @@ import           Statistics.Probability
 
 import           Biobase.SubstMatrix.Embedded
 import           Biobase.SubstMatrix.Import
+import           Biobase.SubstMatrix.Statistics
 import           Biobase.SubstMatrix.Types
 
 
@@ -67,7 +69,7 @@ mkANuc3SubstMat tbl (AASubstMat m)
 -- 1. check if @fname@ is a file, and if so try to load it.
 -- 2. if not, check if @fname@ happens to be the name of one of the known @PAM/BLOSUM@ tables.
 
-fromFileOrCached ∷ (MonadIO m, MonadError String m) ⇒ FilePath → m (AASubstMat t (DiscLogOdds Unknown) a)
+fromFileOrCached ∷ (MonadIO m, MonadError String m) ⇒ FilePath → m (AASubstMat t (DiscLogOdds (1 :% 1)) a)
 fromFileOrCached fname = do
   dfe ← liftIO $ doesFileExist fname
   if | fname == "list" → do
