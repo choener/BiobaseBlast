@@ -156,7 +156,7 @@ data HitDescription = HitDescription
     _id :: !T.Text,
     _accession :: !T.Text,
     _title :: !T.Text,
-    _taxid :: !Int
+    _taxid :: Maybe Int
     --_sciname :: !T.Text
   }
   deriving (Show, Eq, Generic)

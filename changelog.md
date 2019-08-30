@@ -1,3 +1,8 @@
+0.3.1.0
+-------
+
+- Blast datatype supports optional taxonomy id
+
 0.3.0.1
 -------
 
