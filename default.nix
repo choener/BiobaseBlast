@@ -7,7 +7,7 @@
 }:
 mkDerivation {
   pname = "BiobaseBlast";
-  version = "0.3.0.0";
+  version = "0.3.2.0";
   src = ./.;
   libraryHaskellDepends = [
     aeson attoparsec base binary BiobaseENA BiobaseTypes BiobaseXNA

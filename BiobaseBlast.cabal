@@ -1,5 +1,5 @@
 name:           BiobaseBlast
-version:        0.3.1.0
+version:        0.3.2.0
 author:         Christian Hoener zu Siederdissen, Florian Eggenhofer
 maintainer:     choener@bioinf.uni-leipzig.de
 homepage:       https://github.com/choener/BiobaseBlast
@@ -11,7 +11,7 @@ license-file:   LICENSE
 build-type:     Simple
 stability:      experimental
 cabal-version:  >= 1.10.0
-tested-with:    GHC == 8.4.4
+tested-with:    GHC == 8.6.4
 synopsis:       BLAST-related tools
 description:
                 This library contains BLAST-related functionality:
@@ -153,7 +153,7 @@ library
                , BiobaseENA       == 0.0.0.*
                , BiobaseTypes     == 0.2.0.*
                , BiobaseXNA       == 0.11.0.*
-               , PrimitiveArray   == 0.9.1.*
+               , PrimitiveArray   == 0.10.0.*
                , SciBaseTypes     == 0.1.0.*
 
   default-language:
