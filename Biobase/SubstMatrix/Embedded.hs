@@ -16,7 +16,7 @@ import Biobase.SubstMatrix.Types
 
 
 embeddedPamBlosumFiles ∷ [(FilePath,ByteString)]
-embeddedPamBlosumFiles = $(embedDir "sources/PamBlosum")
+embeddedPamBlosumFiles = $(makeRelativeToProject "sources/PamBlosum" >>= embedDir)
 
 embeddedPamBlosum ∷ [(FilePath,AASubstMat t (DiscLogOdds (1:%1)) a)]
 embeddedPamBlosum = either error id . runExcept
