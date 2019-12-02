@@ -10,14 +10,15 @@ import           Data.Binary (Binary)
 import           Data.List (maximumBy,find)
 import           Data.Serialize (Serialize)
 import           Data.Vector.Unboxed.Deriving
+import           Debug.Trace (traceShow)
 import           GHC.Generics (Generic)
+import           GHC.Real(Ratio(..))
 import           Numeric.Log
 import qualified Data.Map.Strict as M
 import qualified Data.Vector.Unboxed as VU
 import           System.Directory (doesFileExist)
 import           System.Exit (exitSuccess)
 import           Text.Printf
-import           GHC.Real(Ratio(..))
 
 import           Biobase.GeneticCodes.Translation
 import           Biobase.GeneticCodes.Types
@@ -48,6 +49,9 @@ import           Biobase.SubstMatrix.Types
 -- The resulting @AA@ are tagged with the name type from the @DNA n@.
 --
 -- TODO Definitely use the correct upper bound constants here!
+--
+-- TODO the amino-acid range produces wrong reads from @m@. We should have this in ExceptT to make
+-- sure we do not read from undefined memory.
 
 mkANuc3SubstMat
   ∷ TranslationTable (Letter DNA n) (Letter AA n)
@@ -57,12 +61,13 @@ mkANuc3SubstMat tbl (AASubstMat m)
   = ANuc3SubstMat
   $ fromAssocs (ZZ:..LtLetter AA.Undef:..LtLetter DNA.N:..LtLetter DNA.N:..LtLetter DNA.N) (AA.Undef, DiscLogOdds . Discretized $ -999)
     [ ( (Z:.a:.u:.v:.w)
-      , (t, m!(Z:.a:.t))
+      , (t, x)
       )
     | a <- VU.toList aaRange
     , u <- [DNA.A .. DNA.N], v <- [DNA.A .. DNA.N], w <- [DNA.A .. DNA.N]
     , let b = Codon u v w
     , let t = translate tbl b
+    , x <- maybe [] (:[]) $ m!?(Z:.a:.t)
     ]
 
 -- | This function does the following:
