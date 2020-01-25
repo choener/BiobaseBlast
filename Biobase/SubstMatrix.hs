@@ -91,8 +91,8 @@ mkProbabilityMatrix
   ∷ Double
   → AASubstMat t (DiscLogOdds k) n
   → AASubstMat t (Log (Probability NotNormalized Double)) n
-mkProbabilityMatrix invScale (AASubstMat dlo) = AASubstMat $ PA.map (/nrm) $ dbl
-  where dbl = PA.map (\(DiscLogOdds (Discretized k)) → stateLogProbability (negate invScale) $ fromIntegral @Int @Double k) dlo
+mkProbabilityMatrix invScale (AASubstMat dlo) = AASubstMat $ mapArray (/nrm) $ dbl
+  where dbl = mapArray (\(DiscLogOdds (Discretized k)) → stateLogProbability (negate invScale) $ fromIntegral @Int @Double k) dlo
         nrm = maximum . Prelude.map snd $ PA.assocs dbl
 
 
