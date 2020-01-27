@@ -22,7 +22,7 @@ import Biobase.SubstMatrix.Types
 
 estimateLambda
   ∷ (Unbox s, Num s, Real s)
-  ⇒ AASubstMat t s a → Double
+  ⇒ AASubstMat t s a b → Double
 {-# Inlinable estimateLambda #-}
 estimateLambda (AASubstMat mat) = go 1000 1 2 0 where
   go count lambda high low

@@ -27,7 +27,7 @@ data Distance
 
 -- An amino-acid substitution matrix. Tagged with the type of scoring used.
 
-newtype AASubstMat t s a = AASubstMat { _aaSubstMat :: Unboxed (Z:.Letter AA a:.Letter AA a) s }
+newtype AASubstMat t s a b = AASubstMat { _aaSubstMat :: Unboxed (Z:.Letter AA a:.Letter AA b) s }
   deriving (Generic,Eq,Read,Show)
 makeLenses ''AASubstMat
 

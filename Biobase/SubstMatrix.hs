@@ -55,7 +55,7 @@ import           Biobase.SubstMatrix.Types
 
 mkANuc3SubstMat
   ∷ TranslationTable (Letter DNA n) (Letter AA n)
-  → AASubstMat t (DiscLogOdds k) n
+  → AASubstMat t (DiscLogOdds k) n n
   → ANuc3SubstMat t (Letter AA n, (DiscLogOdds k)) n n
 mkANuc3SubstMat tbl (AASubstMat m)
   = ANuc3SubstMat
@@ -74,7 +74,7 @@ mkANuc3SubstMat tbl (AASubstMat m)
 -- 1. check if @fname@ is a file, and if so try to load it.
 -- 2. if not, check if @fname@ happens to be the name of one of the known @PAM/BLOSUM@ tables.
 
-fromFileOrCached ∷ (MonadIO m, MonadError String m) ⇒ FilePath → m (AASubstMat t (DiscLogOdds (1 :% 1)) a)
+fromFileOrCached ∷ (MonadIO m, MonadError String m) ⇒ FilePath → m (AASubstMat t (DiscLogOdds (1 :% 1)) a b)
 fromFileOrCached fname = do
   dfe ← liftIO $ doesFileExist fname
   if | fname == "list" → do
@@ -89,8 +89,8 @@ fromFileOrCached fname = do
 
 mkProbabilityMatrix
   ∷ Double
-  → AASubstMat t (DiscLogOdds k) n
-  → AASubstMat t (Log (Probability NotNormalized Double)) n
+  → AASubstMat t (DiscLogOdds k) n m
+  → AASubstMat t (Log (Probability NotNormalized Double)) n m
 mkProbabilityMatrix invScale (AASubstMat dlo) = AASubstMat $ mapArray (/nrm) $ dbl
   where dbl = mapArray (\(DiscLogOdds (Discretized k)) → stateLogProbability (negate invScale) $ fromIntegral @Int @Double k) dlo
         nrm = maximum . Prelude.map snd $ PA.assocs dbl
