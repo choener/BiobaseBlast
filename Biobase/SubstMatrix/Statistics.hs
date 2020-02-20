@@ -21,10 +21,10 @@ import Biobase.SubstMatrix.Types
 -- TODO use ExceptT
 
 estimateLambda
-  ∷ (Unbox s, Num s, Real s)
-  ⇒ AASubstMat t s a b → Double
+  :: (Unbox s, Num s, Real s)
+  => AASubstMat t s a b -> Double
 {-# Inlinable estimateLambda #-}
-estimateLambda (AASubstMat mat) = go 1000 1 2 0 where
+estimateLambda (AASubstMat mat _) = go 1000 1 2 0 where
   go count lambda high low
     | count <= 0 = error "no convergence?!"
     | (high-low) <= 0.001 = lambda

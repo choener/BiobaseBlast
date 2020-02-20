@@ -57,7 +57,7 @@ mkANuc3SubstMat
   ∷ TranslationTable (Letter DNA n) (Letter AA n)
   → AASubstMat t (DiscLogOdds k) n n
   → ANuc3SubstMat t (Letter AA n, (DiscLogOdds k)) n n
-mkANuc3SubstMat tbl (AASubstMat m)
+mkANuc3SubstMat tbl (AASubstMat m l)
   = ANuc3SubstMat
   $ fromAssocs (ZZ:..LtLetter AA.Undef:..LtLetter DNA.N:..LtLetter DNA.N:..LtLetter DNA.N) (AA.Undef, DiscLogOdds . Discretized $ -999)
     [ ( (Z:.a:.u:.v:.w)
@@ -86,12 +86,14 @@ fromFileOrCached fname = do
 
 -- | Turn log-odds into log-probabilities. Normalizes over the whole set of
 -- values in the matrix.
+--
+-- TODO check if lambda should indeed be 1.0
 
 mkProbabilityMatrix
-  ∷ Double
-  → AASubstMat t (DiscLogOdds k) n m
-  → AASubstMat t (Log (Probability NotNormalized Double)) n m
-mkProbabilityMatrix invScale (AASubstMat dlo) = AASubstMat $ mapArray (/nrm) $ dbl
+  :: Double
+  -> AASubstMat t (DiscLogOdds k) n m
+  -> AASubstMat t (Log (Probability NotNormalized Double)) n m
+mkProbabilityMatrix invScale (AASubstMat dlo l) = AASubstMat (mapArray (/nrm) $ dbl) 1.0
   where dbl = mapArray (\(DiscLogOdds (Discretized k)) → stateLogProbability (negate invScale) $ fromIntegral @Int @Double k) dlo
         nrm = maximum . Prelude.map snd $ PA.assocs dbl
 
