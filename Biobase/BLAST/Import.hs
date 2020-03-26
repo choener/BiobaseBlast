@@ -36,7 +36,7 @@ blastCmdJSON2FromFile filePath = do
        bs <- B.readFile filePath
        let json = parseJSONBlastCmd bs
        return json
-     else fail "# JSON2 blast file \"%s\" does not exist\n" filePath
+     else error "# JSON2 blast file \"%s\" does not exist\n" filePath
 
 parseJSONBlastCmd :: B.ByteString -> Either String BlastCmdJSON2
 parseJSONBlastCmd bs = A.eitherDecode bs :: Either String BlastCmdJSON2
@@ -51,7 +51,7 @@ blastFromFile filePath = do
   blastFileExists <- doesFileExist filePath
   if blastFileExists
      then parseTabularBlasts <$> B.readFile filePath
-     else fail "# tabular blast file \"%s\" does not exist\n" filePath
+     else error "# tabular blast file \"%s\" does not exist\n" filePath
 
 -- | reads and parses tabular HTTP Blast result from provided filePath
 blastHTTPFromFile :: String -> IO [BlastTabularResult]
@@ -60,7 +60,7 @@ blastHTTPFromFile filePath = do
   blastFileExists <- doesFileExist filePath
   if blastFileExists
       then parseTabularHTTPBlasts <$> B.readFile filePath
-      else fail "# tabular blast file \"%s\" does not exist\n" filePath
+      else error "# tabular blast file \"%s\" does not exist\n" filePath
 
 -- | Read a lazy bytestring and stream out a lsit of @BlastTabularResult@'s.
 -- In case, there is a parse error "late" in the file, we might have
