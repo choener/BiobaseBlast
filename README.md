@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/choener/BiobaseBlast.svg?branch=master)](https://travis-ci.org/choener/BiobaseBlast)
+![github action: CI](https://github.com/choener/BiobaseBlast/actions/workflows/ci.yml/badge.svg)
 
 # BiobaseBlast
 
