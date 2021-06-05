@@ -26,7 +26,8 @@ import Data.Aeson.TH
 import Data.Aeson.Types
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Sequence as DS
-import Control.Lens
+import Control.Lens(makeLenses)
+import Data.HashMap.Strict (elems)
 
 -- | Turn all keys in a JSON object to lowercase.
 jsonLower :: Value -> Value
@@ -204,15 +205,37 @@ data BlastTabularHit = BlastTabularHit
 data BlastProgram = BlastX | BlastP | BlastN
   deriving (Show, Eq)
 
+makeLenses ''BlastTabularResult
+makeLenses ''BlastTabularHit
+makeLenses ''SearchTarget
+deriveJSON defaultOptions{fieldLabelModifier = drop 1} ''SearchTarget
+makeLenses ''BlastProgram
+deriveJSON defaultOptions{fieldLabelModifier = drop 1} ''BlastProgram
+makeLenses ''SearchStat
+deriveJSON defaultOptions{fieldLabelModifier = drop 1} ''SearchStat
+makeLenses ''HitDescription
+deriveJSON defaultOptions{fieldLabelModifier = drop 1} ''HitDescription
+makeLenses ''Hit
+deriveJSON defaultOptions{fieldLabelModifier = drop 1} ''Hit
+makeLenses ''Hsp
+makeLenses ''Search
+deriveJSON defaultOptions{fieldLabelModifier = drop 1} ''Search
+makeLenses ''BlastJSONResult
+deriveJSON defaultOptions{fieldLabelModifier = drop 1} ''BlastJSONResult
+makeLenses ''Params
+deriveJSON defaultOptions{fieldLabelModifier = drop 1} ''Params
+makeLenses ''BlastReport
+deriveJSON defaultOptions{fieldLabelModifier = drop 1} ''BlastReport
+makeLenses ''BlastOutput2
+deriveJSON defaultOptions{fieldLabelModifier = drop 1} ''BlastOutput2
 makeLenses ''BlastCmdJSON2
 --deriveJSON defaultOptions{fieldLabelModifier = (map toLower) . drop 1} ''BlastJSON2
 instance FromJSON BlastCmdJSON2 where
-  parseJSON (Object v) =
-    BlastCmdJSON2 <$> (v .: "BlastOutput2")
+  parseJSON (Object v) = BlastCmdJSON2 <$> (v .: "BlastOutput2")
   parseJSON _ = mzero
 instance ToJSON BlastCmdJSON2 where
   toJSON (BlastCmdJSON2 _blastoutput2) =
-        object [ "BlastOutput2"  Data.Aeson.Types..= _blastoutput2 ]
+        object [ "BlastOutput2" .= _blastoutput2 ]
 
 makeLenses ''BlastJSON2
 --deriveJSON defaultOptions{fieldLabelModifier = (map toLower) . drop 1} ''BlastJSON2
@@ -221,29 +244,4 @@ instance FromJSON BlastJSON2 where
   parseJSON _ = mzero
 
 instance ToJSON BlastJSON2 where
-  toJSON (BlastJSON2 _blastoutput2) = object [ "BlastOutput2"  Data.Aeson.Types..= _blastoutput2 ]
---deriveJSON defaultOptions{fieldLabelModifier = drop 1} ''BlastJSON2
-makeLenses ''BlastOutput2
-deriveJSON defaultOptions{fieldLabelModifier = drop 1} ''BlastOutput2
-makeLenses ''BlastReport
-deriveJSON defaultOptions{fieldLabelModifier = drop 1} ''BlastReport
-makeLenses ''Params
-deriveJSON defaultOptions{fieldLabelModifier = drop 1} ''Params
-makeLenses ''BlastJSONResult
-deriveJSON defaultOptions{fieldLabelModifier = drop 1} ''BlastJSONResult
-makeLenses ''Search
-deriveJSON defaultOptions{fieldLabelModifier = drop 1} ''Search
-makeLenses ''Hit
-deriveJSON defaultOptions{fieldLabelModifier = drop 1} ''Hit
-makeLenses ''Hsp
---deriveJSON defaultOptions{fieldLabelModifier = drop 1} ''Hsp
-makeLenses ''HitDescription
-deriveJSON defaultOptions{fieldLabelModifier = drop 1} ''HitDescription
-makeLenses ''SearchStat
-deriveJSON defaultOptions{fieldLabelModifier = drop 1} ''SearchStat
-makeLenses ''BlastTabularResult
-makeLenses ''BlastTabularHit
-makeLenses ''SearchTarget
-deriveJSON defaultOptions{fieldLabelModifier = drop 1} ''SearchTarget
-makeLenses ''BlastProgram
-deriveJSON defaultOptions{fieldLabelModifier = drop 1} ''BlastProgram
+  toJSON (BlastJSON2 _blastoutput2) = object [ "BlastOutput2"  .= _blastoutput2 ]
