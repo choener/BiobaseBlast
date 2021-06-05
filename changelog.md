@@ -1,3 +1,10 @@
+0.3.3.0
+-------
+
+- Compatibility with GHC 9
+- Switched testing to github actions
+
+
 0.3.1.0
 -------
 
