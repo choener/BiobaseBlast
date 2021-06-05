@@ -1,6 +1,5 @@
-![github action: CI](https://github.com/choener/BiobaseBlast/actions/workflows/ci.yml/badge.svg)
+# BiobaseBlast [![Hackage](https://img.shields.io/hackage/v/BiobaseBlast.svg)](https://hackage.haskell.org/package/BiobaseBlast) ![github action: CI](https://github.com/choener/BiobaseBlast/actions/workflows/ci.yml/badge.svg)
 
-# BiobaseBlast
 
 This library contains BLAST-related functionality.
 
