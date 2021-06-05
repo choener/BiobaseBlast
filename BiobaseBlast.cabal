@@ -1,5 +1,5 @@
 name:           BiobaseBlast
-version:        0.3.2.0
+version:        0.3.3.0
 author:         Christian Hoener zu Siederdissen, Florian Eggenhofer
 maintainer:     choener@bioinf.uni-leipzig.de
 homepage:       https://github.com/choener/BiobaseBlast
@@ -11,7 +11,7 @@ license-file:   LICENSE
 build-type:     Simple
 stability:      experimental
 cabal-version:  >= 1.10.0
-tested-with:    GHC == 8.6.4
+tested-with:    GHC == 8.8, GHC == 8.10, GHC == 9.0
 synopsis:       BLAST-related tools
 description:
                 This library contains BLAST-related functionality:
